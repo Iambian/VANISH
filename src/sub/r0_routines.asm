@@ -44,7 +44,7 @@ r0rc_csmc .EQU $+1
 	POP AF
 	JP PO,+_
 	EI
-_:	JP.SIS +_
+_:	JP.SIS (+_)&$FFFF
 .ASSUME ADL=0
 _:	POP AF
 	RET

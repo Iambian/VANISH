@@ -329,10 +329,16 @@ bpSave				EQU	rom0_base_adr+$9D8A
 userMem				EQU	rom0_base_adr+$9D95
 symTable			EQU	rom0_base_adr+$FE66
 
+fontFlags		EQU  50
+fracDrawLFont	EQU   2
+fracTallLFont	EQU   3
+customFont		EQU   7  
 
 
+internal_state  EQU rom2_base_adr + $002C00 ;128 bytes: variables
 
-screen_buffer	EQU rom2_base_adr + $002C80	;768 bytes: 96*64/8 pixel buffer
+
+screen_buffer	EQU internal_state+ $000080	;768 bytes: 96*64/8 pixel buffer
 display_lut		EQU screen_buffer + $000300	;768 bytes: 256*3 byte pixel map LUT
 display_buffer	EQU display_lut	  + $000300	;9600 bytes: 320*240/8 mem-mapped LCD
 

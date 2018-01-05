@@ -1706,7 +1706,7 @@ bcall_sbase_boot:
 .dl errnosupport            ;$80B4  
 .dl errnosupport            ;$80B7  * GetBootVer
 .dl errnosupport            ;$80BA  * GetHWVer
-.dl bootxora                ;$80BD  * XorA
+.dl r0_bootxora             ;$80BD  * XorA
 .dl errnosupport            ;$80C0  * bignumpowermod17
 .dl errnosupport            ;$80C3  * ProdNrPart1
 .dl errnosupport            ;$80C6  * WriteAByteSafe
