@@ -1,7 +1,10 @@
-VANISH - Partial TI-83 Plus Emulation Layer for the TI-84 CE
+VANISH - TI-83 Plus Runtime Environment for the TI-84 CE
 ============================================================
 Warning:
-* This project only works on the TI-84 Plus CE.
+* ~~This project only works on the TI-84 Plus CE.~~
+  This project doesn't quite work yet. It's only here at this stage
+  to prevent local accidents from completely destroying the project.
+  Something about backups and stuff.
 * This project will not work on the TI-84 Plus CSE.
 * This project will not work on the TI-84 Plus (SE). If you have
   that calculator, you don't need this anyway. Go download and play
@@ -9,10 +12,11 @@ Warning:
 
 About
 -----
-Project VANISH is a partial emulation layer that helps facilitate the
-execution of old games designed for the TI-83 Plus by providing an
-environment similar to that of the real machine. With minimal tweaks,
-many assembly programs and games will be able to run on the TI-84 Plus CE.
+Project VANISH is an environment that helps facilitate the
+execution of old games designed for the TI-83 Plus by providing a memory layout,
+contents, and base code similar to that of a real TI-83 Plus running
+a stock operating system. With minimal tweaks, many assembly programs
+and games will be able to run on the TI-84 Plus CE.
   
 Motivation
 ----------
