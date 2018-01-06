@@ -9,12 +9,12 @@ screenInit:
 	LDIR
 	;Set LCD controller ports
 	LD IX,$E30200
-	XOR A
+	SCF
 	SBC HL,HL
 	LD (IX+0),HL
-	DEC HL
+	INC HL
 	LD (IX+2),HL          ;Set palette
-	LD IXH,A              ;Set IX to $E30000
+	LD IXH,$00            ;Set IX to $E30000
 	LD (IX+$18),%00100001 ;1bpp
 	LD HL,display_buffer
 	LD (IX+$10),HL        ;Set buffer location
@@ -32,7 +32,19 @@ _:	RLCA \ ADC HL,HL \ RRCA \ RLCA \ ADC HL,HL \ RRCA \ RLCA \ ADC HL,HL
 	JR NZ,--_
 	RET
 	
-
+clearScreen:
+	LD HL,screen_buffer
+	CALL clearBuffer
+	JR updateScreen
+clearBuffer:
+	PUSH HL \ POP DE \ INC DE
+	LD BC,767
+	LD (HL),$00
+	LDIR
+	RET
+	
+	
+	
 updateScreen:
 	PUSH AF \ LD A,I \ PUSH AF \ DI
 	PUSH BC \ PUSH DE \ PUSH HL \ PUSH IX \ PUSH IY
@@ -62,7 +74,7 @@ _:	LD L,(IY+0)
 _:	POP AF
 	RET
 
-
+	
 
 
 
@@ -70,7 +82,7 @@ _reverseA:
 	PUSH BC
 		LD C,1
 _:		RRA
-		RL L
+		RL C
 		JR NC,-_
 		LD A,C
 	POP BC

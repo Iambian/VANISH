@@ -1,0 +1,8 @@
+/_loader/bin
+/_loader/obj
+/bin
+/obj
+/tools/dumpers/*.8xv
+/tools/dumpers/*.8xp
+/tools/dumpers/*.pyc
+/tools/*.pyc
