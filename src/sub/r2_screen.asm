@@ -7,6 +7,17 @@ screenInit:
 	LD BC,(display_buffer+9600)-internal_state-1
 	LD (HL),$00
 	LDIR
+	;init screen state
+	LD A,%01010101
+	LD C,240
+	LD HL,display_buffer
+_:	LD B,40
+_:	LD (HL),A
+	INC HL
+	DJNZ -_
+	RLCA
+	DEC C
+	JR NZ,--_
 	;Set LCD controller ports
 	LD IX,$E30200
 	SCF

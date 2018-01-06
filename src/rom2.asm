@@ -9,7 +9,7 @@ testObject:
 		LD BC,768
 		LDIR
 		CALL updateScreen
-		CALL clearScreen
+		;CALL clearScreen
 		
 		
 		
