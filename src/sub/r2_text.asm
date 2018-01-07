@@ -138,17 +138,16 @@ _load_sfont_6pxwloop:
 	RET
 	
 	
-	
 ;in: DE= 7h x (+0)w pointer to sprite (right aligned)
 ;    IX= screen buffer start (full 24-bit address)
 ;    BC= XY ([0:96],[0:64])
 dispChar:
 	LD A,(DE)
 	ADD A,B
-	CP 96
+	CP 96+1
 	RET NC ;QUIT IF ANY OF THE SPRITE WOULD CLIP PAST THE RIGHT EDGE
 	LD A,C
-	CP 58
+	CP 58+1
 	RET NC ;QUIT IF ANY OF THE SPRITE WOULD CLIP PAST BOTTOM OF SCREEN
 	LD A,B  ;PRESERVE X POSITION FOR LATER ADDITION
 	LD B,12
@@ -172,7 +171,7 @@ dispChar:
 	SUB A,L   ;W. 16-X-W FOR LOOP PARAMS
 	LD (dispChar_subloop_params),A
 	LD B,L    ;REUSE W TO CREATE MASK
-	CPL
+	SCF
 	SBC HL,HL ;HL TO -1
 _:	ADD HL,HL
 	DJNZ -_
@@ -184,6 +183,7 @@ _:	SCF
 	LD (dispChar_maskhigh),A
 	LD A,H
 	LD (dispChar_masklow),A
+	INC DE
 	LD B,7    ;ITERATE 7 TIMES.
 dispChar_mainloop:
 	EX DE,HL
@@ -216,16 +216,188 @@ dispChar_clipright:
 	RET
 	
 	
-	
-	
-	
-divHLby8:
-	LD B,8
-_:	SRL H \ RR L
-	DJNZ -_
+;in: A = char, curRow, curCol, flags
+;out:character displayed, curRow/curCol updated
+;dest: All regs preserved. Calls PutMap to do character display.
+PutC:
+	CALL PutMap
+	PUSH AF
+		LD A,(curCol)
+		ADD A,%11110001    ;Cause a carry if going past 15
+		PUSH AF
+			AND A,%00001111
+			LD (curCol),A
+		POP AF
+		CALL C,NewLine
+	POP AF
+	RET
+PutMap:
+	PUSH AF \ PUSH BC \ PUSH DE \ PUSH HL \ PUSH IX
+		PUSH AF
+			LD L,A
+			LD H,8
+			MLT HL
+			CALL Load_LFont
+			LD HL,(curRow)
+			PUSH HL
+				LD A,H
+				CP 16
+				JR C,+_
+			POP HL
+		POP AF
+		JR _putmap_donotrender
+_:				LD A,L
+				ADD A,A
+				ADD A,A
+				ADD A,A
+				LD C,A
+				LD L,6
+				MLT HL
+				LD B,L
+				LD IX,screen_buffer
+				LD DE,lfont_record
+				CALL dispChar  ;BC=XY
+			POP HL
+			BIT.S appTextSave,(IY+appFlags)
+			JR Z,_putmap_notextshadowcopy
+			LD A,H  ;L=cr,H=cc -> -CCCCCRRR
+			RLCA
+			RLCA
+			RLCA
+			XOR L
+			AND %11111000
+			XOR L
+			SBC HL,HL  ;CLEARS HL
+			LD L,A     ;AND SETS IT TO OFFSET
+			LD DE,textShadow
+			ADD HL,DE
+		POP AF
+		LD (HL),A
+		PUSH AF
+_putmap_notextshadowcopy:
+		POP AF
+_putmap_donotrender:
+	POP IX \ POP HL \ POP DE \ POP BC \ POP AF
 	RET
 
+	
+NewLine:
+	PUSH HL
+		LD.S HL,(curRow)
+		LD H,0
+		LD A,L
+		INC A
+		BIT.S appAutoScroll,(IY+appFlags)
+		JR Z,_newline_skipscrollcheck
+		LD L,A
+		LD A,8  ;change later to (winBtm)
+		DEC A
+		CP L    ;IF MOVED TO LAST ROW, REJECT CHANGE AND SCROLL SCREEN UPWARD
+		JR NZ,_newline_skipscrollcheck
+		DEC L
+		PUSH HL
+			PUSH DE
+				PUSH BC
+					LD DE,screen_buffer
+					LD HL,screen_buffer+(8*12)
+					LD BC,7*8*12  ;6 rows of 8*12 pixels. Bottom row copied.
+					LDIR
+					PUSH DE
+					POP HL
+					INC DE
+					LD (HL),$00
+					LD BC,(7*8)-1 ;clear bottom row
+					LDIR
+				POP BC
+			POP DE
+		POP HL
+_newline_skipscrollcheck:
+		LD.S (curRow),HL
+	POP HL
+	RET
+	
+PutSInternal:
+	LD A,(HL)
+	INC HL
+	OR A
+	RET Z
+	CALL PutC
+	JR PutSInternal
+	
+PutS:
+	PUSH AF
+_:		LD.S A,(HL)
+		OR A
+		JR Z,+_
+		INC.S HL
+		CALL PutC
+		JR -_
+_:	POP AF
+	RET
+	
+divHLby8:
+	PUSH BC
+		LD B,3
+_:		SRL H \ RR L
+		DJNZ -_
+	POP BC
+	RET
 
+DispHL:
+	PUSH BC
+		LD BC,Op1
+		PUSH BC
+			LD DE,-10000
+			CALL _disphl_subr
+			LD DE,-1000
+			CALL _disphl_subr
+			LD DE,-100
+			CALL _disphl_subr
+			LD E,-10
+			CALL _disphl_subr
+			LD E,-1
+			CALL _disphl_subr
+			XOR A
+			LD (BC),A
+		POP HL
+	POP BC
+PutSTrunc:
+	LD A,(curCol)
+	LD D,(HL)
+	INC HL
+	INC D
+	DEC D
+	RET Z
+	CP 15
+	LD A,D
+	JR NC,_putstrunclast
+	CALL PutC
+	JR PutSTrunc
+_putstrunclast:
+	JP PutMap
+	
+	
+	
+_disphl_subr:
+	LD A,'0'-1
+_:	INC A
+	ADD HL,DE
+	JR C,-_
+	SBC HL,DE
+	CP '0'
+	JR NZ,+_
+	LD A,' '
+_:	LD (BC),A
+	INC BC
+	RET
+	
+	
+	
+	
+	
+	
+	
+	
 
 
 lfont_table:

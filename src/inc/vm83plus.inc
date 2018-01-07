@@ -329,10 +329,38 @@ bpSave				EQU	rom0_base_adr+$9D8A
 userMem				EQU	rom0_base_adr+$9D95
 symTable			EQU	rom0_base_adr+$FE66
 
+;//---
+textFlags		EQU   5 	;Text output flags
+textEraseBelow	EQU    1	; 1=erase line below small char
+textScrolled	EQU    2	; 1=screen scrolled
+textInverse		EQU    3	; 1=display inverse bit-map
+textInsMode		EQU    4	; 0=overstrike, 1=insert mode
+
+;//-
+newDispF        EQU  8		;Derivative mode flags
+apdFlags		EQU  8		;Automatic power-down
+preClrForMode   EQU   0		; 1=HELP BLINK ON MODE SCREEN
+apdAble 		EQU   2		; 1=APD enabled
+apdRunning		EQU   3		; 1=APD clock running
+;//-
+appFlags		EQU   13	;application flags
+appWantIntrpt	EQU    0	; 1=want ON key interrupts
+appTextSave		EQU    1	; 1=save characters in textShadow
+appAutoScroll	EQU    2	; 1=auto-scroll text on last line
+appMenus		EQU    3	; 1=process keys that bring up menus
+							; 0=check Lock menu flag
+appLockMenus	EQU    4	; 1=ignore menu keys
+							; 0=switch to home screen and bring up menu
+appCurGraphic	EQU    5	; 1=graphic cursor
+appCurWord		EQU    6	; 1=text cursor covers entire word
+appExit 		EQU    7	; 1=application handles [EXIT] key itself
+;//-
 fontFlags		EQU  50
 fracDrawLFont	EQU   2
 fracTallLFont	EQU   3
 customFont		EQU   7  
+
+;//---
 
 
 internal_state  EQU rom2_base_adr + $002C00 ;128 bytes: variables

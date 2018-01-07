@@ -43,16 +43,28 @@ _:	RLCA \ ADC HL,HL \ RRCA \ RLCA \ ADC HL,HL \ RRCA \ RLCA \ ADC HL,HL
 	JR NZ,--_
 	RET
 	
+ClrLCDFull:
 clearScreen:
 	LD HL,screen_buffer
 	CALL clearBuffer
 	JR updateScreen
 clearBuffer:
+	LD BC,767
+clearMem:
 	PUSH HL \ POP DE \ INC DE
 	LD BC,767
 	LD (HL),$00
 	LDIR
 	RET
+	
+ClrScrnFull:
+	CALL clearScreen
+	BIT.S appTextSave,(IY+appFlags)
+	RET Z
+ClrTxtShd:
+	LD HL,textShadow
+	LD BC,127
+	JR clearMem
 	
 	
 	
@@ -85,10 +97,6 @@ _:	LD L,(IY+0)
 _:	POP AF
 	RET
 
-	
-
-
-
 _reverseA:
 	PUSH BC
 		LD C,1
@@ -98,7 +106,6 @@ _:		RRA
 		LD A,C
 	POP BC
 	RET
-
 
 
 

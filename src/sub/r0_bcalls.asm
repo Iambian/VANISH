@@ -434,7 +434,7 @@ bcall_sbase_os:
 .dl errnosupport            ;$44FE _sOK 
 .dl errnosupport            ;$4501 _PutMap 
 .dl errnosupport            ;$4504 _PutC 
-.dl errnosupport            ;$4507 _DispHL 
+.dl DispHL                  ;$4507 _DispHL 
 .dl errnosupport            ;$450A _PutS 
 .dl errnosupport            ;$450D _putpsb 
 .dl errnosupport            ;$4510 _PutPS 
@@ -453,11 +453,11 @@ bcall_sbase_os:
 .dl errnosupport            ;$4537 _shrinkWindow 
 .dl errnosupport            ;$453A _moveUp 
 .dl errnosupport            ;$453D _scrollDown 
-.dl errnosupport            ;$4540 _ClrLCDFull 
+.dl ClrLCDFull              ;$4540 _ClrLCDFull 
 .dl errnosupport            ;$4543 _ClrLCD 
-.dl errnosupport            ;$4546 _ClrScrnFull 
+.dl ClrScrnFull             ;$4546 _ClrScrnFull 
 .dl errnosupport            ;$4549 _ClrScrn 
-.dl errnosupport            ;$454C _ClrTxtShd 
+.dl ClrTxtShd               ;$454C _ClrTxtShd 
 .dl errnosupport            ;$454F _ClrWindow 
 .dl errnosupport            ;$4552 _EraseEOL 
 .dl errnosupport            ;$4555 _EraseEOW 
