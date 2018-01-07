@@ -64,6 +64,12 @@ void main(void) {
 	
 	printline("Runtime environment loaded.");
 	/* CONFIGURE REQUIREMENTS FOR LOADER */
+	if (!(slot = ti_OpenVar("TESTRUN","r",0x05))) { printerr("Cannot find/open TESTRUN"); gfx_End(); return;	}
+	memcpy((void*)0xD49D93,ti_GetDataPtr(slot),9001);
+	ti_CloseAll();
+	
+	
+	
 	
 	
 	/* ### START DEBUG ### */

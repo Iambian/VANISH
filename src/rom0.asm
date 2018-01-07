@@ -7,4 +7,13 @@
 #include "src/sub/r0_bcalls.asm"   ;OS and boot code bcall tables
 
 
+execAsmPrgm:
+.assume adl=1
+	JP.SIS (+_)&$FFFF
+.assume adl=0
+_:	CALL $9D95
+.assume adl=1
+	JP.LIL +_
+_:	RET
+.assume adl=0
 .echo "rom0 size: ",$-rom0_base_adr," bytes"
