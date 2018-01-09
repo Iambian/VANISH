@@ -4,7 +4,8 @@
 
 .ASSUME ADL=0
 .BLOCK (rom0_base_adr+$00)-$ ;rst 00h SYSTEM_RESET
-	RET 
+	DI
+	JR __SYSTEM_RESET
 .BLOCK (rom0_base_adr+$08)-$ ;rst 08h _Op1ToOp2
 	RET
 .BLOCK (rom0_base_adr+$10)-$ ;rst 10h _FindSym
@@ -28,13 +29,14 @@
 .BLOCK (rom0_base_adr+$5C)-$ ;errhandler off
 	RET
 .BLOCK (rom0_base_adr+$66)-$ ;NMI vector
+	JP __NMI_HANDLER&$FFFF
 	RETN
 
 .BLOCK (rom0_base_adr+$70)-$  ;FIXED ADDRESS.
-__BASE_INTERRUPT:
+__SYSTEM_RESET:
 	DI
-	;DO STUFF
-	EI
-	RET
+	CALL stopWdt&$FFFF
+	JP.LIL errtrap
+
 
 

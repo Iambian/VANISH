@@ -290,7 +290,7 @@ NewLine:
 		BIT.S appAutoScroll,(IY+appFlags)
 		JR Z,_newline_skipscrollcheck
 		LD L,A
-		LD A,8  ;change later to (winBtm)
+		LD A,8  ;TODO: change later to (winBtm)
 		DEC A
 		CP L    ;IF MOVED TO LAST ROW, REJECT CHANGE AND SCROLL SCREEN UPWARD
 		JR NZ,_newline_skipscrollcheck
@@ -344,6 +344,7 @@ _:		SRL H \ RR L
 	RET
 
 DispHL:
+	SET.S leadingSpace,(IY+internalFlags)
 	PUSH BC
 		LD BC,Op1
 		PUSH BC
@@ -386,15 +387,43 @@ _:	INC A
 	SBC HL,DE
 	CP '0'
 	JR NZ,+_
+	BIT.S leadingSpace,(IY+internalFlags)
+	JR Z,++_
 	LD A,' '
+	JR ++_
+_:	RES.S leadingSpace,(IY+internalFlags)
 _:	LD (BC),A
 	INC BC
 	RET
 	
+HomeUp:
+	PUSH AF
+		PUSH HL
+			LD HL,curRow
+			LD A,0  ;TODO: REPLACE WITH (winTop)
+			LD (HL),A
+			INC HL
+			LD (HL),0
+		POP HL
+	POP AF
+	RET
 	
-	
-	
-	
+DispHLHex:
+	LD A,H
+	CALL DispAHex
+	LD A,L
+DispAHex:
+	PUSH AF
+		RRA
+		RRA
+		RRA
+		RRA
+		CALL _
+	POP AF
+_	DAA
+	ADD A,$A0
+	ADC A,$40
+	jp PutC
 	
 	
 	

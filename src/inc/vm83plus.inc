@@ -335,6 +335,9 @@ textEraseBelow	EQU    1	; 1=erase line below small char
 textScrolled	EQU    2	; 1=screen scrolled
 textInverse		EQU    3	; 1=display inverse bit-map
 textInsMode		EQU    4	; 0=overstrike, 1=insert mode
+;//-
+internalFlags   EQU   6     ;##THESE FLAGS WEREN'T BEING USED
+leadingSpace    EQU  0      ; Internal use
 
 ;//-
 newDispF        EQU  8		;Derivative mode flags

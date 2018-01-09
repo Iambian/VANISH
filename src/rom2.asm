@@ -6,6 +6,7 @@ testObject:
 		LD A,MB
 		PUSH AF
 			;BEGIN SYSTEM INITIALIZATION
+			LD (_curStackLevel),SP
 			LD A,(rom0_base_adr>>16)&$FF
 			LD MB,A
 			CALL screenInit
@@ -16,8 +17,11 @@ testObject:
 			SET.S appTextSave,(IY+appFlags)
 			RES.S preClrForMode,(IY+newDispF)
 			;END DEBUG INITIALIZATIONS
-			JR $
 			CALL execAsmPrgm
+execExit:
+_curStackLevel .EQU $+1
+			LD SP,0
+			CALL updateScreen
 		POP AF
 		LD MB,A
 	POP IX
@@ -45,6 +49,7 @@ testString:
 #include "src/sub/r2_errors.asm"   ;Simulated, and internal error reporting
 #include "src/sub/r2_screen.asm"   ;LCD routines and that which writes to it
 #include "src/sub/r2_text.asm"     ;Text rendering
+#include "src/sub/r2_keyboard.asm" ;Keyboard routines
 
 
 

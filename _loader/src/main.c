@@ -41,6 +41,7 @@ uint8_t texty;
 void main(void) {
 	void *fptr,*dptr;
 	ti_var_t slot;
+	int i,j;
 	gfx_Begin();
 	gfx_SetDrawBuffer();
 	ti_CloseAll();
@@ -53,25 +54,18 @@ void main(void) {
 	if (!(slot = ti_Open("VANISHR0","r"))) { printerr("Cannot find/open VANISHR0"); gfx_End(); return;	}
 	dzx7_Turbo(ti_GetDataPtr(slot),(void*)0xD40000); //USE rom0_base_adr
 	ti_CloseAll();
-
 	if (!(slot = ti_Open("VANISHR1","r"))) { printerr("Cannot find/open VANISHR1"); gfx_End(); return;	}
 	dzx7_Turbo(ti_GetDataPtr(slot),(void*)0xD50000); //USE rom1_base_adr
 	ti_CloseAll();
-	
 	if (!(slot = ti_Open("VANISHR2","r"))) { printerr("Cannot find/open VANISHR2"); gfx_End(); return;	}
 	dzx7_Turbo(ti_GetDataPtr(slot),(void*)0xD60000); //USE rom2_base_adr
 	ti_CloseAll();
-	
-	printline("Runtime environment loaded.");
-	/* CONFIGURE REQUIREMENTS FOR LOADER */
+	/*######################################################
+	## DO NOT OUTPUT TO THE SCREEN BUFFER AFTER THIS POINT #
+	######################################################*/
 	if (!(slot = ti_OpenVar("TESTRUN","r",0x05))) { printerr("Cannot find/open TESTRUN"); gfx_End(); return;	}
 	memcpy((void*)0xD49D93,ti_GetDataPtr(slot),9001);
 	ti_CloseAll();
-	
-	
-	
-	
-	
 	/* ### START DEBUG ### */
 	debugfn();
 	waitanykey();

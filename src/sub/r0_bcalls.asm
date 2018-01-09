@@ -432,10 +432,10 @@ bcall_sbase_os:
 .dl errnosupport            ;$44F8 _sFAIL 
 .dl errnosupport            ;$44FB _sName 
 .dl errnosupport            ;$44FE _sOK 
-.dl errnosupport            ;$4501 _PutMap 
-.dl errnosupport            ;$4504 _PutC 
+.dl PutMap                  ;$4501 _PutMap 
+.dl PutC                    ;$4504 _PutC 
 .dl DispHL                  ;$4507 _DispHL 
-.dl errnosupport            ;$450A _PutS 
+.dl PutS                    ;$450A _PutS 
 .dl errnosupport            ;$450D _putpsb 
 .dl errnosupport            ;$4510 _PutPS 
 .dl errnosupport            ;$4513 _wputps 
@@ -461,7 +461,7 @@ bcall_sbase_os:
 .dl errnosupport            ;$454F _ClrWindow 
 .dl errnosupport            ;$4552 _EraseEOL 
 .dl errnosupport            ;$4555 _EraseEOW 
-.dl errnosupport            ;$4558 _HomeUp 
+.dl HomeUp                  ;$4558 _HomeUp 
 .dl errnosupport            ;$455B _getcurloc 
 .dl errnosupport            ;$455E _VPutMap 
 .dl errnosupport            ;$4561 _VPutS 

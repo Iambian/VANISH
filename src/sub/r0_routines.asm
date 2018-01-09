@@ -1,7 +1,7 @@
 .ASSUME ADL=0
 
-r0rc_ret_stack_entry .EQU -8
-r0rc_ret_handler     .EQU -6
+r0rc_ret_stack_entry .EQU 6
+;r0rc_ret_handler     .EQU 4
 
 r0_romcaller: ;-8
 	PUSH AF \ PUSH HL \ PUSH DE
@@ -16,6 +16,14 @@ r0_romcaller: ;-8
 	DEC HL      ;BACKTRACK TO DATA 2 BYTE
 	LD D,(HL)
 	LD E,A      ;COMPLETE DATA 1,2 IN DE
+	LD (r0syscalldata&$FFFF),DE ;FOR DEBUGGING/ERROR REPORTING PURPOSES
+	LD.LIL HL,($F10000)   ;WDT GET CURRENT TIME
+	LD A,%00010001        ;WDT ENABLE, DISABLE INTERRUPT GEN, USE 32KHZ CLOCK
+	LD.LIL ($F1000C),A    ;WDT STATUS REGISTER WRITE
+	LD.LIL ($F10004),HL   ;WDT WRITE NEW RESET VALUE
+	LD A,I  ;MAINTAIN INTERRUPT STATE AFTER EXIT
+	DI
+	PUSH.L AF  ;PUSH FLAGS TO SPL
 	JP.LIL +_
 .ASSUME ADL=1
 _:	LD A,D
@@ -26,29 +34,38 @@ r0rc_app:
 	LD HL,$004000  ;PLACEHOLDER FOR WHEN SUPPORT IS ADDED
 	JR r0rc_coll
 r0rc_boot:
-	LD HL,bcall_sbase_boot-$000018
+	LD HL,bcall_sbase_boot-$008018
 	JR r0rc_coll
 r0rc_os:
-	LD HL,bcall_sbase_os
+	LD HL,bcall_sbase_os-$004000
 r0rc_coll:
 	ADD HL,DE
 	LD DE,(HL)
 	LD (r0rc_csmc),DE
-	LD A,I  ;MAINTAIN INTERRUPT STATE AFTER EXIT
-	DI
-	PUSH AF  ;PUSH TO SPL
 	POP.S DE \	POP.S HL \	POP.S AF
 r0rc_csmc .EQU $+1
 	CALL 0
-	PUSH.S AF
-	POP AF
-	JP PO,+_
-	EI
-_:	JP.SIS (+_)&$FFFF
+	JP.SIS (+_)&$FFFF
 .ASSUME ADL=0
-_:	POP AF
+_:	PUSH AF
+	POP.L AF  ;POP FLAGS FROM SPL
+	JP PO,_&$FFFF
+	EI
+_:	PUSH HL
+		LD.LIL A,($F1000C)
+		AND 1
+		JR Z,_
+		CALL __MANUAL_NMI_SCREEN_UPDATE&$FFFF
+		JR ++_
+_:		LD.LIL HL,($F10000)
+		LD.LIL ($F10004),HL
+		LD A,%00010101
+		LD.LIL($F1000C),A
+_:	POP HL
+	POP AF
 	RET
-	
+r0syscalldata:
+.dw 0
 	
 	
 	
