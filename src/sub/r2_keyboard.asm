@@ -1,5 +1,20 @@
 .ASSUME ADL=1
 
+;There's 5 bytes at this location. The full five bytes is probably used
+;to do proper key debouncing and stuff. This routine is supposed to be
+;called by the interrupt so that GetCSC is nearly instantaneous and properly
+;handles debouncing by not being dependent on the number of times it is called
+KbdScan:
+	CALL getscancode
+	;there's more debouncing work to be done.
+	LD (kbdScanCode),A
+	RET
+	
+GetCSC:
+	LD A,(kbdScanCode)
+	RET
+
+
 ;group pre-increment
 ;key post-increment
 getscancode:
@@ -80,12 +95,12 @@ waitAnyKey:
 _:	XOR A
 	CALL getDirectInput
 	INC A
-	JR NZ,-_    ;LOOP UNTIL YOU STOP PRESSING A KEY
+	JR Z,-_    ;LOOP UNTIL YOU PRESS A KEY
 keyWait:
 	XOR A
 	CALL getDirectInput
 	INC A
-	JR Z,keyWait  ;KEEP LOOPING UNTIL A KEY IS PRESSED
+	JR NZ,keyWait  ;WAIT UNTIL ALL KEYS ARE RELEASED
 	RET
 	
 	

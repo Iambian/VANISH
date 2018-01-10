@@ -63,12 +63,15 @@ void main(void) {
 	/*######################################################
 	## DO NOT OUTPUT TO THE SCREEN BUFFER AFTER THIS POINT #
 	######################################################*/
-	if (!(slot = ti_OpenVar("TESTRUN","r",0x05))) { printerr("Cannot find/open TESTRUN"); gfx_End(); return;	}
-	memcpy((void*)0xD49D93,ti_GetDataPtr(slot),9001);
+	if (!(slot = ti_OpenVar("DEADEYES","r",0x05))) {
+		if (!(slot = ti_OpenVar("TESTRUN","r",0x05))) {
+			printerr("Cannot find/open test programs."); gfx_End(); return;
+		}
+	}
+	memcpy((void*)0xD49D93,ti_GetDataPtr(slot),24000);
 	ti_CloseAll();
 	/* ### START DEBUG ### */
 	debugfn();
-	waitanykey();
 	/* ### END DEBUG ### */
 	gfx_End();
 	

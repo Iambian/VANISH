@@ -43,16 +43,14 @@ r0rc_coll:
 	LD DE,(HL)
 	LD (r0rc_csmc),DE
 	POP.S DE \	POP.S HL \	POP.S AF
+	;JP.SIS (+_)&$FFFF
 r0rc_csmc .EQU $+1
 	CALL 0
 	JP.SIS (+_)&$FFFF
 .ASSUME ADL=0
 _:	PUSH AF
-	POP.L AF  ;POP FLAGS FROM SPL
-	JP PO,_&$FFFF
-	EI
-_:	PUSH HL
-		LD.LIL A,($F1000C)
+	PUSH HL
+		LD.LIL A,($F10010)
 		AND 1
 		JR Z,_
 		CALL __MANUAL_NMI_SCREEN_UPDATE&$FFFF
@@ -62,7 +60,10 @@ _:		LD.LIL HL,($F10000)
 		LD A,%00010101
 		LD.LIL($F1000C),A
 _:	POP HL
-	POP AF
+	POP.L AF  ;POP FLAGS FROM SPL
+	JP PO,_&$FFFF
+	EI
+_:  POP AF
 	RET
 r0syscalldata:
 .dw 0

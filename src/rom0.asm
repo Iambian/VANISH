@@ -1,6 +1,8 @@
 .ASSUME ADL=0
 #include "src/inc/vm83plus.inc"    ;For VM.
 .ORG rom0_base_adr
+#define out_data(mem,port,rep) CALL outPortData&$FFFF \.dw (mem)&$FFFF,port \.db rep
+#define in_data(mem,port,rep)  CALL inPortData&$FFFF  \.dw (mem)&$FFFF,port \.db rep
 
 #include "src/sub/basepage.asm"    ;This must always be defined first.
 #include "src/sub/interrupt.asm"   ;Where the interrupt routines live
@@ -13,8 +15,11 @@ execAsmPrgm:
 	JP.SIS (+_)&$FFFF
 .assume adl=0
 _:	CALL initHardware&$FFFF
+	IM 1
+	EI
 	CALL $9D95
-	CALL stopWdt&$FFFF
+	DI
+	CALL restoreHardware&$FFFF
 .assume adl=1
 	JP.LIL +_
 _:	RET
@@ -29,10 +34,7 @@ initHardware:
 	;setup WDT
 	CALL stopWdt&$FFFF
 	PUSH BC
-		LD BC,12
-		LD HL,wdtInitData&$FFFF
-		LD DE,$6004  ;WDT, copy data
-		OTI2R
+		out_data(wdtInitData,$6004,9)
 	POP BC
 	LD C,$18
 	OUT (BC),A  ;Interrupt length register. Writing a 0 until we know.
@@ -48,8 +50,11 @@ initHardware:
 	LD A,$5A
 	INC C
 	OUT (BC),A
-	;init other hardware
-	;
+	;set port and memory protections
+	in_data(privCodeSave,$001D,9)
+	out_data(privCodeSet,$001D,9)
+	XOR A
+	LD.LIL ($F20030),A  ;KILL GEN PURPOSE TIMERS
 	RET
 stopWdt:
 	XOR A 
@@ -57,16 +62,39 @@ stopWdt:
 	OUT (BC),A   ;stop WDT
 	RET
 	
-	
-	
-	
-	
 wdtInitData:
 .db $22,$02,$00,$00  ;load register
 .db $00,$00          ;restart register
 
+privCodeSave:
+.block 9
+privCodeSet:
+.dl $004000,$D40000,$D43FFF
 
-
+restoreHardware:
+	CALL stopWdt&$FFFF
+	out_data(privCodeSave,$001D,9)
+	RET
+	
+outPortData:
+	CALL _cpydatreg_macro&$FFFF
+	JP lowmem_oti2r&$FFFF
+inPortData:
+	CALL _cpydatreg_macro&$FFFF
+	JP lowmem_ini2r&$FFFF
+_cpydatreg_macro:	;MEM(2B),PORT(2B),REP(1B)
+	POP HL      ;GET RET TO in/out RTN
+	POP IX
+	PEA IX+5
+	PUSH HL
+	LD HL,(IX+0)
+	LD DE,(IX+2)
+	LD C,(IX+4)
+	LD B,0
+	RET
+	
+	
+	
 
 
 .echo "rom0 size: ",$-rom0_base_adr," bytes"

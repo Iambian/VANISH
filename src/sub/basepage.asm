@@ -6,7 +6,13 @@
 .BLOCK (rom0_base_adr+$00)-$ ;rst 00h SYSTEM_RESET
 	DI
 	JR __SYSTEM_RESET
+lowmem_oti2r:
+	OTI2R
+	RET
 .BLOCK (rom0_base_adr+$08)-$ ;rst 08h _Op1ToOp2
+	RET
+lowmem_ini2r:
+	INI2R
 	RET
 .BLOCK (rom0_base_adr+$10)-$ ;rst 10h _FindSym
 	RET
@@ -35,7 +41,7 @@
 .BLOCK (rom0_base_adr+$70)-$  ;FIXED ADDRESS.
 __SYSTEM_RESET:
 	DI
-	CALL stopWdt&$FFFF
+	CALL restoreHardware&$FFFF
 	JP.LIL errtrap
 
 

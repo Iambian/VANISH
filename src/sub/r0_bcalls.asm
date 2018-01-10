@@ -12,8 +12,8 @@ bcall_sbase_os:
 .dl errnosupport            ;$400C _CpHLDE 
 .dl errnosupport            ;$400F _DivHLBy10 
 .dl errnosupport            ;$4012 _DivHLByA 
-.dl errnosupport            ;$4015 _kdbScan 
-.dl errnosupport            ;$4018 _GetCSC 
+.dl KbdScan                 ;$4015 _kdbScan 
+.dl GetCSC                  ;$4018 _GetCSC 
 .dl errnosupport            ;$401B _coorMon 
 .dl errnosupport            ;$401E _Mon 
 .dl errnosupport            ;$4021 _monForceKey 
@@ -463,9 +463,9 @@ bcall_sbase_os:
 .dl errnosupport            ;$4555 _EraseEOW 
 .dl HomeUp                  ;$4558 _HomeUp 
 .dl errnosupport            ;$455B _getcurloc 
-.dl errnosupport            ;$455E _VPutMap 
-.dl errnosupport            ;$4561 _VPutS 
-.dl errnosupport            ;$4564 _VPutSN 
+.dl VPutMap                 ;$455E _VPutMap 
+.dl VPutS                   ;$4561 _VPutS 
+.dl VPutSN                  ;$4564 _VPutSN 
 .dl errnosupport            ;$4567 _vputsnG 
 .dl errnosupport            ;$456A _vputsnT 
 .dl errnosupport            ;$456D _RunIndicOn 
@@ -723,7 +723,7 @@ bcall_sbase_os:
 .dl errnosupport            ;$4861 _ZmTrig 
 .dl errnosupport            ;$4864 _SetXMinMax 
 .dl errnosupport            ;$4867 _ZooDefault 
-.dl errnosupport            ;$486A _GrBufCpy 
+.dl GrBufCpy                ;$486A _GrBufCpy 
 .dl errnosupport            ;$486D _DRAWSPLITLINE 
 .dl errnosupport            ;$4870 _RestoreDisp 
 .dl errnosupport            ;$4873 _FNDDB 
@@ -1013,7 +1013,7 @@ bcall_sbase_os:
 .dl errnosupport            ;$4BC7 _GRPPutAway 
 .dl errnosupport            ;$4BCA _CKVALDELX 
 .dl errnosupport            ;$4BCD _CKVALDELTA 
-.dl errnosupport            ;$4BD0 _GrBufClr 
+.dl GrBufClr                ;$4BD0 _GrBufClr 
 .dl errnosupport            ;$4BD3 _GRBUFCPY_V 
 .dl errnosupport            ;$4BD6 _FNDSELEQ 
 .dl errnosupport            ;$4BD9 _CLRGRAPHXY 

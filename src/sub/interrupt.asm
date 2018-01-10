@@ -2,25 +2,30 @@
 
 __BASE_INTERRUPT:
 	DI
+	PUSH AF \ PUSH HL
 	;Should deal in keyboard, debouncing, etc
-	
+;	LD.LIL HL,($F00000)
+	LD.LIL HL,$FFFFFF
+	LD.LIL ($F00008),HL  ;ACKNOWLEDGE ALL
 	;Stop doing the stuff here.
+	POP HL  \ POP AF
 	EI
 	RETI
 
 	
 __MANUAL_NMI_SCREEN_UPDATE:
 	PUSH AF \ PUSH BC
+		LD B,$60
 		JR +_
 __NMI_HANDLER:
 	PUSH AF \ PUSH BC
 		LD BC,$6010
 		IN A,(BC)
 		AND 1
+		JR Z,__NMI_SYSTEM_FAULT
 _:		JP.LIL _
 .ASSUME ADL=1
-_:		JP Z,errnonmi
-		CALL updateScreen
+_:		CALL updateScreen
 		JP.SIS _&$FFFF
 .ASSUME ADL=0
 _:		LD A,$20
@@ -29,11 +34,18 @@ _:		LD A,$20
 		INC C
 		LD A,$02 ;LOAD+1 REGISTER
 		OUT (BC),A
+		LD C,$14 ;WDT CLEAR REGISTER
+		XOR A
+		OUT (BC),A
 		LD C,$0C ;WDT FLAGS
 		LD A,%00010101 ;TIMER ENABLE, GEN NMI, USE 32KHZ CLOCK
 		OUT (BC),A
 	POP BC \ POP AF
 	RETN
 
+__NMI_SYSTEM_FAULT:
+	CALL restoreHardware&$FFFF
+	JP.LIL errnonmi
+	
 
 

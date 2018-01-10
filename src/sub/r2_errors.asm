@@ -38,25 +38,18 @@ _errtrap_str:
 
 DispErrStart:
 	PUSH HL
-		LD HL,$E30200
-		LD (HL),$E3
-		INC HL
-		LD (HL),$E3
+		LD HL,_err_palette
+		CALL SetColorPalette
 		CALL ClrScrnFull
 		CALL HomeUp
 		LD HL,_disperrstart_str
 		CALL PutSInternal
 	POP HL
 	RET
+_err_palette:
+.dw %0011110000000000,$FFFF
 _disperrstart_str:
     ;0123456789012345
 .db "A fatal error   "
 .db "has occurred:   ",0
-
-
-
-
-
-
-
 

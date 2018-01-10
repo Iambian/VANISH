@@ -358,6 +358,17 @@ appCurGraphic	EQU    5	; 1=graphic cursor
 appCurWord		EQU    6	; 1=text cursor covers entire word
 appExit 		EQU    7	; 1=application handles [EXIT] key itself
 ;//-
+sGrFlags		EQU   20
+grfSplit		EQU    0	; 1=Split Graph, 0=Normal
+vertSplit		EQU    1	; 1=Vertical (left-right) Split
+grfSChanged		EQU    2	; 1=Graph just changed Split <-> normal
+grfSplitOverride EQU   3	; 1 = ignore graph split flag if set
+write_on_graph	EQU    4	; 1 = TEXT OR EQU WRITING TO GRAPH SCREEN
+g_style_active	EQU    5	; 1 = GRAPH STYLES ARE ENABLED, USE THEM
+cmp_mod_box		EQU    6	; 1 = DOING MOD BOX PLOT COMPUTATION
+textWrite		EQU    7	; 1 = Small font writes to buffer
+							; 0 = Small font writes to display
+;//-
 fontFlags		EQU  50
 fracDrawLFont	EQU   2
 fracTallLFont	EQU   3

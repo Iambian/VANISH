@@ -7,134 +7,140 @@ LoadPattern:
 Load_LFont:
 Load_LFont2:
 	LD DE,lfont_record
-	LD A,6
-	LD (DE),A
-	INC DE
-	;You'll want to check to see if you're using a font hook/customFont
-	;then jump to that routine since copying to lfont_record is much
-	;more straightfoward in that case.
-	CALL divHLby8
-	LD BC,lfont_table
-	LD A,L
-	CP 171
-	JR NC,_loadLFont_getslack
-	LD H,7
-	MLT HL
-	ADD HL,BC  ;OFFSET+TABLE = ADDRESS TO ENTRY
-	LD B,7
+	PUSH DE
+		LD A,6
+		LD (DE),A
+		INC DE
+		;You'll want to check to see if you're using a font hook/customFont
+		;then jump to that routine since copying to lfont_record is much
+		;more straightfoward in that case.
+		CALL divHLby8
+		LD BC,lfont_table
+		LD A,L
+		CP 171
+		JR NC,_loadLFont_getslack
+		LD H,7
+		MLT HL
+		ADD HL,BC  ;OFFSET+TABLE = ADDRESS TO ENTRY
+		LD B,7
 _loadLFont_getmainloop:
-	LD A,(HL)
-	INC HL
-	ADD A,A
-	AND %00111110
-	LD (DE),A
-	INC DE
-	DJNZ _loadLFont_getmainloop
+		LD A,(HL)
+		INC HL
+		ADD A,A
+		AND %00111110
+		LD (DE),A
+		INC DE
+		DJNZ _loadLFont_getmainloop
+	POP DE
 	RET
 _loadLFont_getslack:
-	LD H,14
-	MLT HL
-	ADD HL,BC
-	LD B,7
+		LD H,14
+		MLT HL
+		ADD HL,BC
+		LD B,7
 _loadLFont_getslackloop:
-	LD A,(HL)
-	INC HL
-	RRCA 
-	RRCA
-	RRCA
-	XOR (HL)
-	AND %00011100
-	XOR (HL)
-	RRA
-	OR A
-	RRA  ;MAKE SURE IT'S %--BBBAAA
-	INC HL
-	LD (DE),A
-	INC DE
-	DJNZ _loadLFont_getslackloop
+		LD A,(HL)
+		INC HL
+		RRCA 
+		RRCA
+		RRCA
+		XOR (HL)
+		AND %00011100
+		XOR (HL)
+		RRA
+		OR A
+		RRA  ;MAKE SURE IT'S %--BBBAAA
+		INC HL
+		LD (DE),A
+		INC DE
+		DJNZ _loadLFont_getslackloop
+	POP DE
 	RET
 Load_SFont:
 	LD DE,sfont_record
-	;You'll want to check to see if you're using a font hook/customFont
-	;then jump to that routine since copying to sfont_record is much
-	;more straightfoward in that case.
-	CALL divHLby8
-	LD BC,sfont_table
-	LD H,4
-	MLT HL
-	ADD HL,BC
-	LD A,(HL)
-	INC HL
-	LD C,A
-	RLCA
-	PUSH AF
+	PUSH DE
+		;You'll want to check to see if you're using a font hook/customFont
+		;then jump to that routine since copying to sfont_record is much
+		;more straightfoward in that case.
+		CALL divHLby8
+		LD BC,sfont_table
+		LD H,4
+		MLT HL
+		ADD HL,BC
+		LD A,(HL)
+		INC HL
+		LD C,A
 		RLCA
-		RLCA
-		RLCA
-		AND %00000111
+		PUSH AF
+			RLCA
+			RLCA
+			RLCA
+			AND %00000111
+			LD (DE),A
+			INC DE
+		POP AF
+		JR C,_load_sfont_6pxw
+_load_sfont_4pxw:
+		LD A,C
+		AND %00001111
 		LD (DE),A
 		INC DE
-	POP AF
-	JR C,_load_sfont_6pxw
-_load_sfont_4pxw:
-	LD A,C
-	AND %00001111
-	LD (DE),A
-	INC DE
-	LD B,3
+		LD B,3
 _load_sfont_4pxwloop:
-	RLD
-	LD (DE),A
-	INC DE
-	RLD
-	LD (DE),A
-	INC DE
-	RLD
-	INC HL
-	DJNZ _load_sfont_4pxwloop
+		RLD
+		LD (DE),A
+		INC DE
+		RLD
+		LD (DE),A
+		INC DE
+		RLD
+		INC HL
+		DJNZ _load_sfont_4pxwloop
+	POP DE
 	RET
 _load_sfont_6pxw:
-	LD B,%00111111
-	LD A,(HL)  ;NEED 2 UPPER BITS
-	RRCA
-	RRCA
-	XOR C
-	AND %11110000
-	XOR C
-	AND B
-	LD (DE),A  ;R0
-	INC DE
-	LD A,(HL)  ;NOW USE LOWER 6 BITS
-	INC HL
-	AND B
-	LD (DE),A  ;R1
-	INC DE
-	LD A,(HL)
-	INC HL
-	AND B
-	LD (DE),A  ;R2. THE UPPER 2 BITS ARE UNUSED. CLEARED.
-	INC DE
-	LD L,(HL)
-	LD H,3
-	MLT HL
-	LD BC,sfont_table+1024
-	ADD HL,BC  ;GET SECONDARY TABLE ENTRY
-	LD BC,(3*256)+0
+		LD B,%00111111
+		LD A,(HL)  ;NEED 2 UPPER BITS
+		RRCA
+		RRCA
+		XOR C
+		AND %11110000
+		XOR C
+		AND B
+		LD (DE),A  ;R0
+		INC DE
+		LD A,(HL)  ;NOW USE LOWER 6 BITS
+		INC HL
+		AND B
+		LD (DE),A  ;R1
+		INC DE
+		LD A,(HL)
+		INC HL
+		AND B
+		LD (DE),A  ;R2. THE UPPER 2 BITS ARE UNUSED. CLEARED.
+		INC DE
+		LD L,(HL)
+		LD H,3
+		MLT HL
+		LD BC,sfont_table+1024
+		ADD HL,BC  ;GET SECONDARY TABLE ENTRY
+		LD BC,(3*256)+0
 _load_sfont_6pxwloop:
-	LD A,(HL)
-	INC HL
-	OR A
-	RLA
-	RL C
-	RLA
-	RL C
-	RRA
-	RRA   ;%--nnnnnn
-	LD (DE),A ;R3, R4, R5
-	INC DE
-	DJNZ _load_sfont_6pxwloop
-	LD A,C
-	LD (DE),A ;R6
+		LD A,(HL)
+		INC HL
+		OR A
+		RLA
+		RL C
+		RLA
+		RL C
+		RRA
+		RRA   ;%--nnnnnn
+		LD (DE),A ;R3, R4, R5
+		INC DE
+		DJNZ _load_sfont_6pxwloop
+		LD A,C
+		LD (DE),A ;R6
+	POP DE
 	RET
 	
 	
@@ -145,10 +151,12 @@ dispChar:
 	LD A,(DE)
 	ADD A,B
 	CP 96+1
-	RET NC ;QUIT IF ANY OF THE SPRITE WOULD CLIP PAST THE RIGHT EDGE
+	CCF
+	RET C ;QUIT IF ANY OF THE SPRITE WOULD CLIP PAST THE RIGHT EDGE
 	LD A,C
 	CP 58+1
-	RET NC ;QUIT IF ANY OF THE SPRITE WOULD CLIP PAST BOTTOM OF SCREEN
+	CCF
+	RET C ;QUIT IF ANY OF THE SPRITE WOULD CLIP PAST BOTTOM OF SCREEN
 	LD A,B  ;PRESERVE X POSITION FOR LATER ADDITION
 	LD B,12
 	MLT BC  ;Y*12, clears BCU
@@ -213,6 +221,7 @@ dispChar_maskhigh .EQU $+1
 dispChar_clipright:
 	LEA IX,IX+12
 	DJNZ dispChar_mainloop
+	OR A  ;kills carry
 	RET
 	
 	
@@ -420,12 +429,59 @@ DispAHex:
 		RRA
 		CALL _
 	POP AF
-_	DAA
+_	OR A,$F0
+	DAA
 	ADD A,$A0
 	ADC A,$40
 	jp PutC
 	
-	
+VPutMap:
+	PUSH BC
+		PUSH HL
+			CALL LoadPattern ;Our variant returns s/lfont_record in DE.
+			LD IX,screen_buffer
+			BIT.S textWrite,(IY+sGrFlags)
+			JR Z,_
+			LD IX,plotsscreen
+_:			LD HL,(penCol) ;(X,Y) = (penCol,penRow) = [L,H]
+			LD C,H
+			LD B,L
+			LD A,(DE)      ;CHARACTER WIDTH
+			PUSH AF
+				CALL dispChar  ;also sets carry if could not fit on screen
+			POP AF
+		POP HL
+	POP BC
+	RET
+VPutC:  ;Not a romcall.
+	PUSH IX \ PUSH DE
+		CALL VPutMap  ;OUR VARIANT RETURNS TEXT WIDTH IN A
+	POP DE  \ POP IX
+	RET C  ;DO NOT ATTEMPT TO ADVANCE POINTER IF DID NOT WRITE
+	PUSH HL
+		LD HL,penCol
+		ADD A,(HL)
+		LD (HL),A
+	POP HL
+	RET
+		
+VPutS:
+	ret
+	LD A,(HL)
+	INC HL
+	OR A
+	RET Z
+	CALL VPutC
+	RET C
+	JR VPutS
+
+VPutSN:
+	LD A,(HL)
+	INC HL
+	CALL VPutC
+	RET C
+	DJNZ VPutSN
+	RET
 	
 
 

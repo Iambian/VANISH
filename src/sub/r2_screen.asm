@@ -1,5 +1,8 @@
 .ASSUME ADL=1
 
+defaultColorPalette:
+.dw -1,0
+
 screenInit:
 	;resets all buffers to $00
 	LD HL,internal_state
@@ -19,6 +22,8 @@ _:	LD (HL),A
 	DEC C
 	JR NZ,--_
 	;Set LCD controller ports
+	LD HL,defaultColorPalette
+	CALL SetColorPalette
 	LD IX,$E30200
 	SCF
 	SBC HL,HL
@@ -57,6 +62,18 @@ clearMem:
 	LDIR
 	RET
 	
+GrBufClr:
+	LD HL,plotsscreen
+	JR clearBuffer
+	
+GrBufCpy: ;TODO: (winBtm) should be =8, use split screen settings
+	LD HL,plotsscreen
+	LD DE,screen_buffer
+	LD BC,768
+	LDIR
+	RET
+	
+	
 ClrScrnFull:
 	CALL clearScreen
 	BIT.S appTextSave,(IY+appFlags)
@@ -69,7 +86,7 @@ ClrTxtShd:
 	
 	
 updateScreen:
-	PUSH AF \ LD A,I \ PUSH AF \ DI
+	PUSH AF
 	PUSH BC \ PUSH DE \ PUSH HL \ PUSH IX \ PUSH IY
 	LD IY,screen_buffer
 	LD IX,display_buffer+(24*40)+2
@@ -92,9 +109,6 @@ _:	LD L,(IY+0)
 	JR NZ,--_
 	POP IY  \ POP IX  \ POP HL  \ POP DE  \ POP BC
 	POP AF
-	JP PO,+_
-	EI
-_:	POP AF
 	RET
 
 _reverseA:
@@ -107,7 +121,15 @@ _:		RRA
 	POP BC
 	RET
 
-
+SetColorPalette: ;HL=ptr to palette
+	PUSH DE
+		PUSH BC
+			LD DE,$E30200
+			LD BC,4
+			LDIR
+		POP BC
+	POP DE
+	RET
 
 
 

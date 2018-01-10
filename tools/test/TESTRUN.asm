@@ -12,7 +12,6 @@ _DispHL			EQU 4507h
 ProgramStart:
 	bcall(_ClrScrnFull)
 	ld hl,64000
-	SLL C
 _:	push hl
 		bcall(_HomeUp)
 		bcall(_DispHL)
