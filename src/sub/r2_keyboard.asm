@@ -36,9 +36,15 @@ _gsc_mainloop:
 			DEC C
 			JR NZ,_gsc_reject_keypress  ;FAT FINGERS ON ANOTHER ROW? REJECT.
 _:			INC C
-			ADD A,A
+			SRL A     ;RRCA DOES NOT SET Z FLAG. RRC A DOES.
 			JR NC,-_  ;LOOP UNTIL A 1 BIT IS FOUND.
 			JR NZ,_gsc_reject_keypress  ;PRVENT SUPER FAT FINGER PROBLEMS
+			LD A,B
+			ADD A,A
+			ADD A,A
+			ADD A,A
+			ADD A,C
+			LD C,A   ;STORE COMPLETED KEY BACK IN C, KEEP LOOPING TO PREV FATFINGER
 _gsc_nextrow:
 			INC B
 			DEC L
@@ -49,11 +55,6 @@ _gsc_nextrow:
 			LD A,C
 			OR A
 			JR Z,_gsc_reject_keypress  ;NO KEYS WERE ACTUALLY PUSHED
-			LD A,B  ;GET GROUP
-			ADD A,A
-			ADD A,A
-			ADD A,A ;Row*8
-			ADD A,C ;+col
 		POP BC
 	POP HL
 	RET

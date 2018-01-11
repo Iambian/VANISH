@@ -466,8 +466,17 @@ VPutC:  ;Not a romcall.
 	POP HL
 	RET
 		
-VPutS:
+VPutSInternal:
 	LD A,(HL)
+	INC HL
+	OR A
+	RET Z
+	CALL VPutC
+	RET C
+	JR VPutSInternal
+		
+VPutS:
+	LD.S A,(HL)
 	INC HL
 	OR A
 	RET Z

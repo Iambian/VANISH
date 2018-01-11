@@ -12,10 +12,15 @@ testObject:
 			CALL screenInit
 			LD IY,flags
 			;END SYSTEM INITIALIZATION
-			RES.S textInverse,(IY+textFlags)
+			RES.S textInverse,(IY+textFlags)    ;should be implemented soon
 			SET.S appAutoScroll,(IY+appFlags)
 			SET.S appTextSave,(IY+appFlags)
 			RES.S preClrForMode,(IY+newDispF)
+			
+			RES.S textEraseBelow,(IY+textFlags) ;not implemented yet
+			RES.S textWrite,(IY+sGrFlags)
+			RES.S fracDrawLFont,(IY+fontFlags)
+			
 			;END DEBUG INITIALIZATIONS
 			CALL execAsmPrgm
 execExit:
@@ -44,7 +49,8 @@ testString:
 .db "disagree but I  "
 .db "simply cannot   "
 .db "take it anymore",0
-
+testVString:
+.db "Rawr. Cherries.",0
 
 #include "src/sub/r2_errors.asm"   ;Simulated, and internal error reporting
 #include "src/sub/r2_screen.asm"   ;LCD routines and that which writes to it

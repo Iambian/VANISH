@@ -12,7 +12,6 @@ _GetCSC			EQU 4018h
 
 ProgramStart:
 	bcall(_ClrScrnFull)
-	sll c
 _:	ei
 	bcall(_HomeUp)
 	bcall(_GetCSC)
