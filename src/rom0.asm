@@ -18,6 +18,7 @@ _:	CALL initHardware&$FFFF
 	IM 1
 	EI
 	CALL $9D95
+exitAsmPrgm:
 	DI
 	CALL restoreHardware&$FFFF
 .assume adl=1
@@ -53,6 +54,23 @@ initHardware:
 	;set port and memory protections
 	in_data(privCodeSave,$001D,9)
 	out_data(privCodeSet,$001D,9)
+	;Set up keyboard
+	LD BC,$A000
+	LD A,3
+	OUT (BC),A
+	LD C,$0C
+	LD A,1
+	OUT (BC),A
+	;MASK OUT INTERRUPTS, LATCH ONLY ON KEY
+	LD.LIL HL,($F00004)
+	LD.LIL (_restoreHardwareInterruptWriteback),HL
+	LD.LIL HL,1+(1<<10)  ;ON, KBD
+	LD.LIL ($F00004),HL
+	;Setup Emulator hardware (breakpoints)
+	LD DE,$0038 \ SCF \ SBC.LIL HL,HL \ LD.LIL (HL),3 ;WRITING TO ANGRY ADDRESS
+	LD DE,$0066 \ SCF \ SBC.LIL HL,HL \ LD.LIL (HL),3 ;WRITING TO ANGRY ADDRESS
+	
+	
 	XOR A
 	LD.LIL ($F20030),A  ;KILL GEN PURPOSE TIMERS
 	RET
@@ -70,10 +88,30 @@ privCodeSave:
 .block 9
 privCodeSet:
 .dl $004000,$D40000,$D43FFF
+keyboardScanSet:
+
+
+
+
+OffpageRestoreHardware:  ;called from ADL mode
+	CALL restoreHardware&$FFFF
+	RET.L
 
 restoreHardware:
 	CALL stopWdt&$FFFF
 	out_data(privCodeSave,$001D,9)
+	LD BC,$A000
+	XOR A
+	OUT (BC),A  ;RESET KEYBOARD TO IDLE
+	LD C,$0C
+	LD A,0
+	OUT (BC),A  ;TURN OFF KBD INTERRUPT FROM KBD SOURCE
+_restoreHardwareInterruptWriteback .EQU $+2
+	LD.LIL HL,0
+	LD.LIL ($F00004),HL
+	;unsets breakpoints
+	LD DE,$0038 \ SCF \ SBC.LIL HL,HL \ LD.LIL (HL),4 ;WRITING TO ANGRY ADDRESS
+	LD DE,$0066 \ SCF \ SBC.LIL HL,HL \ LD.LIL (HL),4 ;WRITING TO ANGRY ADDRESS
 	RET
 	
 outPortData:

@@ -8,19 +8,16 @@ _PutS			EQU 450Ah
 _ClrScrnFull	EQU 4546h
 _HomeUp 		EQU 4558h
 _DispHL			EQU 4507h
+_GetCSC			EQU 4018h
 
 ProgramStart:
 	bcall(_ClrScrnFull)
-	ld hl,64000
-_:	push hl
-		bcall(_HomeUp)
-		bcall(_DispHL)
-	pop hl
-	inc hl
-	ld a,h
-	or l
-	jr nz,-_
-	ret
-str1:
-.db "HELLO WORLD",0
+	sll c
+_:	ei
+	bcall(_HomeUp)
+	bcall(_GetCSC)
+	ld L,A
+	ld H,0
+	bcall(_DispHL)
+	jr -_
 

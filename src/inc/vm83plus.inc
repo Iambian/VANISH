@@ -3,6 +3,10 @@
 
 #DEFINE equ .equ
 #DEFINE EQU .equ
+#DEFINE bcall(x) rst 28h \.dw x
+
+_KbdScan	EQU	$4015
+
 
 rom0_base_adr	EQU	$D40000		;65536 bytes (64.0KB)
 rom1_base_adr	EQU	$D50000		;65536 bytes (64.0KB)
@@ -329,6 +333,22 @@ bpSave				EQU	rom0_base_adr+$9D8A
 userMem				EQU	rom0_base_adr+$9D95
 symTable			EQU	rom0_base_adr+$FE66
 
+
+
+
+;//-
+trigFlags	EQU  0		;Trigonometry mode settings
+trigDeg 	EQU    2	; 1=degrees, 0=radians
+
+kbdFlags	EQU  0		;Keyboard scan
+kbdSCR		EQU    3	; 1=scan code ready
+kbdKeyPress	EQU    4	; 1=key has been pressed
+
+doneFlags	EQU  0		;display "Done"
+donePrgm	EQU    5	; 1=display "Done" after prgm
+
+ioDelFlag	EQU  0
+inDelete	EQU    0	;1 = DELETE SCREEN 
 ;//---
 textFlags		EQU   5 	;Text output flags
 textEraseBelow	EQU    1	; 1=erase line below small char
@@ -338,7 +358,6 @@ textInsMode		EQU    4	; 0=overstrike, 1=insert mode
 ;//-
 internalFlags   EQU   6     ;##THESE FLAGS WEREN'T BEING USED
 leadingSpace    EQU  0      ; Internal use
-
 ;//-
 newDispF        EQU  8		;Derivative mode flags
 apdFlags		EQU  8		;Automatic power-down

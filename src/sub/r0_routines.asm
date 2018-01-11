@@ -22,8 +22,11 @@ r0_romcaller: ;-8
 	LD.LIL ($F1000C),A    ;WDT STATUS REGISTER WRITE
 	LD.LIL ($F10004),HL   ;WDT WRITE NEW RESET VALUE
 	LD A,I  ;MAINTAIN INTERRUPT STATE AFTER EXIT
+	LD A,$C9  ;RET OPCODE
+	JP PO,_&$FFFF
+	LD A,$FB  ;EI OPCODE
+_:	LD (r0interruptenablesmc&$FFFF),A
 	DI
-	PUSH.L AF  ;PUSH FLAGS TO SPL
 	JP.LIL +_
 .ASSUME ADL=1
 _:	LD A,D
@@ -60,16 +63,12 @@ _:		LD.LIL HL,($F10000)
 		LD A,%00010101
 		LD.LIL($F1000C),A
 _:	POP HL
-	POP.L AF  ;POP FLAGS FROM SPL
-	JP PO,_&$FFFF
-	EI
-_:  POP AF
+	POP AF
+r0interruptenablesmc .EQU $+0
+	RET
 	RET
 r0syscalldata:
 .dw 0
-	
-	
-	
 	
 	
 	

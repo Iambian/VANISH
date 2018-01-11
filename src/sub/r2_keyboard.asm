@@ -11,14 +11,18 @@ KbdScan:
 	RET
 	
 GetCSC:
-	LD A,(kbdScanCode)
+	LD A,$FB
+	LD (r0interruptenablesmc+$080000),A  ;write to non-protected mirrored RAM
+	LD HL,kbdScanCode
+	LD A,(HL)
+	LD (HL),$00
 	RET
 
 
 ;group pre-increment
 ;key post-increment
 getscancode:
-	CALL scankbd
+	;CALL scankbd
 	PUSH HL
 		PUSH BC
 			LD HL,$F5001E
@@ -42,6 +46,9 @@ _gsc_nextrow:
 			LD A,L
 			CP A,$10
 			JR NZ,_gsc_mainloop
+			LD A,C
+			OR A
+			JR Z,_gsc_reject_keypress  ;NO KEYS WERE ACTUALLY PUSHED
 			LD A,B  ;GET GROUP
 			ADD A,A
 			ADD A,A
@@ -61,7 +68,7 @@ _gsc_reject_keypress:
 ;Bitfields are the same but inversed.
 
 getDirectInput:
-	CALL scankbd
+	;CALL scankbd
 	PUSH HL
 		PUSH BC
 			LD HL,$F5001E
@@ -92,12 +99,14 @@ _:		CP A,(HL)
 
 waitAnyKey:
 	CALL keyWait
-_:	XOR A
+_:	CALL scankbd
+	XOR A
 	CALL getDirectInput
 	INC A
 	JR Z,-_    ;LOOP UNTIL YOU PRESS A KEY
 keyWait:
 	XOR A
+	CALL scankbd
 	CALL getDirectInput
 	INC A
 	JR NZ,keyWait  ;WAIT UNTIL ALL KEYS ARE RELEASED

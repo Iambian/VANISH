@@ -1,16 +1,22 @@
 .ASSUME ADL=0
 
 __BASE_INTERRUPT:
-	DI
 	PUSH AF \ PUSH HL
 	;Should deal in keyboard, debouncing, etc
-;	LD.LIL HL,($F00000)
-	LD.LIL HL,$FFFFFF
-	LD.LIL ($F00008),HL  ;ACKNOWLEDGE ALL
-	;Stop doing the stuff here.
+	LD.LIL HL,($F00014)
+	BIT 0,L \ JP NZ,exitAsmPrgm&$FFFF
+	BIT 2,H
+	JR Z,_
+	PUSH BC
+		bcall(_KbdScan)
+		LD BC,$A008
+		IN A,(BC)       ;b0: scanComplete, b1:kpad data reg changed
+		OUT (BC),A      ;b2: key pushed in mode 1
+	POP BC
+_:	;Stop doing the stuff here.
 	POP HL  \ POP AF
 	EI
-	RETI
+	RET
 
 	
 __MANUAL_NMI_SCREEN_UPDATE:
@@ -23,6 +29,9 @@ __NMI_HANDLER:
 		IN A,(BC)
 		AND 1
 		JR Z,__NMI_SYSTEM_FAULT
+		LD C,$0C  ;FLAGS
+		XOR A
+		OUT (BC),A  ;KILLS WDT
 _:		JP.LIL _
 .ASSUME ADL=1
 _:		CALL updateScreen

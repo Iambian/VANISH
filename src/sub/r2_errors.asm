@@ -1,6 +1,7 @@
 .ASSUME ADL=1
 
 errnosupport:
+	CALL.SIS OffpageRestoreHardware&$FFFF
 	CALL DispErrStart
 	LD HL,_errnosupp_str
 	CALL PutSInternal

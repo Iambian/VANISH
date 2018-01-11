@@ -365,6 +365,7 @@ DispHL:
 			CALL _disphl_subr
 			LD E,-10
 			CALL _disphl_subr
+			RES.S leadingSpace,(IY+internalFlags)
 			LD E,-1
 			CALL _disphl_subr
 			XOR A
@@ -466,7 +467,6 @@ VPutC:  ;Not a romcall.
 	RET
 		
 VPutS:
-	ret
 	LD A,(HL)
 	INC HL
 	OR A
