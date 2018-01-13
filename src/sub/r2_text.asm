@@ -436,7 +436,7 @@ _	OR A,$F0
 	ADC A,$40
 	jp PutC
 	
-VPutMap:
+VPutMapInternal:
 	PUSH BC
 		PUSH HL
 			CALL LoadPattern ;Our variant returns s/lfont_record in DE.
@@ -454,9 +454,11 @@ _:			LD HL,(penCol) ;(X,Y) = (penCol,penRow) = [L,H]
 		POP HL
 	POP BC
 	RET
+	
+VPutMap:
 VPutC:  ;Not a romcall.
 	PUSH IX \ PUSH DE
-		CALL VPutMap  ;OUR VARIANT RETURNS TEXT WIDTH IN A
+		CALL VPutMapInternal  ;OUR VARIANT RETURNS TEXT WIDTH IN A
 	POP DE  \ POP IX
 	RET C  ;DO NOT ATTEMPT TO ADVANCE POINTER IF DID NOT WRITE
 	PUSH HL

@@ -29,10 +29,10 @@ __NMI_HANDLER:
 		IN A,(BC)
 		AND 1
 		JR Z,__NMI_SYSTEM_FAULT
-		LD C,$0C  ;FLAGS
+_:		LD C,$0C  ;FLAGS
 		XOR A
 		OUT (BC),A  ;KILLS WDT
-_:		JP.LIL _
+		JP.LIL _
 .ASSUME ADL=1
 _:		CALL updateScreen
 		JP.SIS _&$FFFF

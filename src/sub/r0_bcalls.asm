@@ -8,8 +8,8 @@ bcall_sbase_os:
 .dl errnosupport            ;$4000 _JErrorNo 
 .dl errnosupport            ;$4003 _FontHook 
 .dl errnosupport            ;$4006 _call_character_hook 
-.dl errnosupport            ;$4009 _ldHLind 
-.dl errnosupport            ;$400C _CpHLDE 
+.dl LdHLind                 ;$4009 _ldHLind 
+.dl CpHLDE                  ;$400C _CpHLDE 
 .dl errnosupport            ;$400F _DivHLBy10 
 .dl errnosupport            ;$4012 _DivHLByA 
 .dl KbdScan                 ;$4015 _kdbScan 
@@ -1649,6 +1649,10 @@ bcall_sbase_os:
 ;84+SE boot 1.00 basecall table is 276 bytes long (92 entries) starting at #8018
 #DEFINE BOOT_NUMCALLS 92
 
+
+
+
+.dl getDirectInput          ;$8015  - VANISH exclusive: getDirectInput
 bcall_sbase_boot:
 ;.ds (bcall_sbase_boot+(3*BOOT_NUMCALLS))-$
 .dl errnosupport            ;$8018  * MD5Final

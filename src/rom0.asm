@@ -79,6 +79,29 @@ stopWdt:
 	LD BC,$600C
 	OUT (BC),A   ;stop WDT
 	RET
+suspendWdt:
+	LD A,%00010001
+reconfigWdt:
+	LD BC,$6000
+	IN L,(BC)
+	INC C
+	IN H,(BC)
+	LD C,$0C
+	OUT (BC),A
+	LD C,$04
+	OUT (BC),L
+	INC C
+	OUT (BC),H
+	RET
+restartWdt:
+	LD.LIL A,($F10010)
+	AND 1
+	CALL NZ,__MANUAL_NMI_SCREEN_UPDATE&$FFFF
+	LD A,%00010101
+	JR reconfigWdt
+	
+	
+	
 	
 wdtInitData:
 .db $22,$02,$00,$00  ;load register

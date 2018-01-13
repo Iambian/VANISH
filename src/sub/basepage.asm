@@ -33,9 +33,9 @@ SET_LCD_ZADDR:
 rst_mov9toop1:
 	bcall($417A)
 	RET
-.BLOCK (rom0_base_adr+$24)-$ ;EXPOSED ROUTINE: GET_SCANCODE
-GET_SCANCODE:
-	jr _GETSCANCODE
+.BLOCK (rom0_base_adr+$24)-$ ;INTERNAL ROUTINE: N/A
+;
+;
 .BLOCK (rom0_base_adr+$28)-$ ;rst 28h BCALL_MACRO_ROUTINE
 rst_bcallmacro:
 	JP (r0_romcaller)&$FFFF
@@ -54,7 +54,7 @@ rst_bcallmacro:
 .BLOCK (rom0_base_adr+$50)-$ ;bjump
 	RET
 .BLOCK (rom0_base_adr+$59)-$ ;errhandler on
-;[2017-12-28 08:45.46] <jacobly> so it's basically push (errSP) \ push (FPS)-(fpBase) \ push (OPS)-(OPBase) \ ld (errSP),sp
+;jacobly: It's push: (errSP), (FPS)-(fpBase), (OPS)-(OPBase), LD (errSP),SP
 	RET
 .BLOCK (rom0_base_adr+$5C)-$ ;errhandler off
 	RET
@@ -73,12 +73,5 @@ _LCDZADDR:
 	EX (SP),HL
 	;A = CODE TO USE TO SCREW WITH LCD THINGS.
 	RET
-_GETSCANCODE:
-	JP.LIL _
-.ASSUME ADL=1
-_:	CALL getscancode
-	JP.SIS _&$FFFF
-.ASSUME ADL=0
-_:	RET
 
 

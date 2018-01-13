@@ -17,10 +17,9 @@ r0_romcaller: ;-8
 	LD D,(HL)
 	LD E,A      ;COMPLETE DATA 1,2 IN DE
 	LD (r0syscalldata&$FFFF),DE ;FOR DEBUGGING/ERROR REPORTING PURPOSES
-	LD.LIL HL,($F10000)   ;WDT GET CURRENT TIME
-	LD A,%00010001        ;WDT ENABLE, DISABLE INTERRUPT GEN, USE 32KHZ CLOCK
-	LD.LIL ($F1000C),A    ;WDT STATUS REGISTER WRITE
-	LD.LIL ($F10004),HL   ;WDT WRITE NEW RESET VALUE
+	PUSH BC
+		CALL suspendWdt&$FFFF
+	POP BC
 	LD A,I  ;MAINTAIN INTERRUPT STATE AFTER EXIT
 	LD A,$C9  ;RET OPCODE
 	JP PO,_&$FFFF
@@ -44,42 +43,49 @@ r0rc_os:
 r0rc_coll:
 	ADD HL,DE
 	LD DE,(HL)
+	PUSH DE \ INC SP \ POP AF \ DEC SP
+	CP A,($>>16)&$FF  ;if called routine is on same page as this, call in z80 mode
+	JP.SIS Z,r0rc_samepage&$FFFF
 	LD (r0rc_csmc),DE
 	POP.S DE \	POP.S HL \	POP.S AF
-	;JP.SIS (+_)&$FFFF
 r0rc_csmc .EQU $+1
 	CALL 0
-	JP.SIS (+_)&$FFFF
+	JP.SIS r0rc_continuez80mode&$FFFF
 .ASSUME ADL=0
-_:	PUSH AF
-	PUSH HL
-		LD.LIL A,($F10010)
-		AND 1
-		JR Z,_
-		CALL __MANUAL_NMI_SCREEN_UPDATE&$FFFF
-		JR ++_
-_:		LD.LIL HL,($F10000)
-		LD.LIL ($F10004),HL
-		LD A,%00010101
-		LD.LIL($F1000C),A
-_:	POP HL
+r0rc_continuez80mode:
+	PUSH AF
+		PUSH BC
+			PUSH HL
+				CALL restartWdt&$FFFF
+			POP HL
+		POP BC
 	POP AF
 r0interruptenablesmc .EQU $+0
 	RET
 	RET
 r0syscalldata:
 .dw 0
-	
-	
-	
-	
-
-
-
-
+r0rc_samepage:
+	LD ((_+1)&$FFFF),DE	
+	POP DE \ POP HL \ POP AF
+_:	CALL 0
+	JR r0rc_continuez80mode
 
 r0_bootxora:
 	XOR A
 donothing:
 	RET
-
+LdHLInd:
+	LD HL,(HL)
+	LD A,L ;MIMIC LEGACY BEHAVIOR
+	RET
+CpHLDE:
+	PUSH HL
+		OR A
+		SBC HL,DE
+	POP HL
+	RET
+	
+	
+	
+	
