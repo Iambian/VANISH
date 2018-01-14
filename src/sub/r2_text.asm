@@ -187,10 +187,18 @@ _:	ADD HL,HL
 _:	SCF
 	ADC HL,HL ;MAKING SURE ALL THE BITS THAT GET FILLED IN ARE 1s.
 	DJNZ -_
+	BIT.S textInverse,(IY+textFlags)
 	LD A,L
 	LD (dispChar_maskhigh),A
+	JR Z,$+4 \ CPL \ LD L,A
 	LD A,H
 	LD (dispChar_masklow),A
+	JR Z,$+4 \ CPL \ LD H,A
+	JR NZ,$+5 \ OR A \ SBC HL,HL
+	LD A,L
+	LD (dispChar_inversemaskhigh),A
+	LD A,H
+	LD (dispChar_inversemasklow),A
 	INC DE
 	LD B,7    ;ITERATE 7 TIMES.
 dispChar_mainloop:
@@ -209,6 +217,8 @@ _:	ADD HL,HL
 dispChar_masklow .EQU $+1
 	AND A,0
 	OR H
+dispChar_inversemasklow .EQU $+1
+	XOR A,0
 	LD (IX+0),A
 	LD A,C
 	CP 88
@@ -217,6 +227,8 @@ dispChar_masklow .EQU $+1
 dispChar_maskhigh .EQU $+1
 	AND A,0
 	OR L
+dispChar_inversemaskhigh .EQU $+1
+	XOR A,0
 	LD (IX+1),A
 dispChar_clipright:
 	LEA IX,IX+12
@@ -345,11 +357,9 @@ _:	POP AF
 	RET
 	
 divHLby8:
-	PUSH BC
-		LD B,3
-_:		SRL H \ RR L
-		DJNZ -_
-	POP BC
+	SRL H \ RR L
+	SRL H \ RR L
+	SRL H \ RR L
 	RET
 
 DispHL:
@@ -436,7 +446,8 @@ _	OR A,$F0
 	ADC A,$40
 	jp PutC
 	
-VPutMapInternal:
+	
+VPutMap:
 	PUSH BC
 		PUSH HL
 			CALL LoadPattern ;Our variant returns s/lfont_record in DE.
@@ -448,24 +459,16 @@ _:			LD HL,(penCol) ;(X,Y) = (penCol,penRow) = [L,H]
 			LD C,H
 			LD B,L
 			LD A,(DE)      ;CHARACTER WIDTH
-			PUSH AF
+			PUSH DE
 				CALL dispChar  ;also sets carry if could not fit on screen
-			POP AF
-		POP HL
+			POP DE
+			JR C,_
+			LD HL,penCol
+			LD A,(DE)
+			ADD A,(HL)
+			LD (HL),A
+_:		POP HL
 	POP BC
-	RET
-	
-VPutMap:
-VPutC:  ;Not a romcall.
-	PUSH IX \ PUSH DE
-		CALL VPutMapInternal  ;OUR VARIANT RETURNS TEXT WIDTH IN A
-	POP DE  \ POP IX
-	RET C  ;DO NOT ATTEMPT TO ADVANCE POINTER IF DID NOT WRITE
-	PUSH HL
-		LD HL,penCol
-		ADD A,(HL)
-		LD (HL),A
-	POP HL
 	RET
 		
 VPutSInternal:
@@ -473,27 +476,31 @@ VPutSInternal:
 	INC HL
 	OR A
 	RET Z
-	CALL VPutC
+	CALL VPutMap
 	RET C
 	JR VPutSInternal
 		
 VPutS:
-	LD.S A,(HL)
-	INC HL
-	OR A
-	RET Z
-	CALL VPutC
-	RET C
-	JR VPutS
+	PUSH AF \ PUSH DE \ PUSH IX
+_:		LD.S A,(HL)
+		INC HL
+		OR A
+		JR Z,VPutSEnd
+		CALL VPutMap
+		JR NC,-_
+VPutSEnd:
+	POP IX \ POP DE \ POP AF
+	RET
+		
 
 VPutSN:
-	LD A,(HL)
-	INC HL
-	CALL VPutC
-	RET C
-	DJNZ VPutSN
-	RET
-	
+	PUSH AF \ PUSH DE \ PUSH IX
+_:		LD A,(HL)
+		INC HL
+		CALL VPutMap
+		JR C,VPutSEnd
+		DJNZ -_
+		JR VPutSEnd
 
 
 lfont_table:
