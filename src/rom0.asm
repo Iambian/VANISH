@@ -58,6 +58,9 @@ initHardware:
 	LD BC,$A000
 	LD A,3
 	OUT (BC),A
+	;LD C,$03
+	;LD A,162
+	;OUT (BC),A  ;SLOW DOWN KEY REPEAT TO 144Hz
 	LD C,$0C
 	LD A,1
 	OUT (BC),A
@@ -129,6 +132,9 @@ restoreHardware:
 	LD C,$0C
 	LD A,0
 	OUT (BC),A  ;TURN OFF KBD INTERRUPT FROM KBD SOURCE
+	LD C,$03
+	LD A,15
+	OUT (BC),A  ;RESTORE KEYBOARD RESCAN DELAY
 _restoreHardwareInterruptWriteback .EQU $+2
 	LD.LIL HL,0
 	LD.LIL ($F00004),HL

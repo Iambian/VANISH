@@ -65,6 +65,10 @@ r0interruptenablesmc .EQU $+0
 	RET
 r0syscalldata:
 .dw 0
+r0debugcall:
+.dl 0
+
+
 r0rc_samepage:
 	LD ((_+1)&$FFFF),DE	
 	POP DE \ POP HL \ POP AF
@@ -88,7 +92,7 @@ CpHLDE:
 	
 ;5856
 	
-#define opxy(x,y) .db y*11,x*11
+#define opxy(x,y) .db ((y-1)*11)+(Op1&$FF),((x-1)*11)+(Op1&$FF)
 Op1ToOp2: CALL OpXtoOpY&$FFFF \ opxy(1,2) ;1
 Op1ToOp3: CALL OpXtoOpY&$FFFF \ opxy(1,3)
 Op1ToOp4: CALL OpXtoOpY&$FFFF \ opxy(1,4)
@@ -126,6 +130,28 @@ Op2ExOp4: CALL OpXExOpY&$FFFF \ opxy(2,4)
 Op2ExOp5: CALL OpXExOpY&$FFFF \ opxy(2,5)
 Op2ExOp6: CALL OpXExOpY&$FFFF \ opxy(2,6)
 Op5ExOp6: CALL OpXExOpY&$FFFF \ opxy(5,6)
+
+#define opxn(x,n) .db n,((x-1)*11)+(Op1&$FF)
+OP1Set0:  CALL OPXSetY&$FFFF \ opxn(1,$00)
+OP1Set1:  CALL OPXSetY&$FFFF \ opxn(1,$01)
+OP1Set2:  CALL OPXSetY&$FFFF \ opxn(1,$02)
+OP1Set3:  CALL OPXSetY&$FFFF \ opxn(1,$03)
+OP1Set4:  CALL OPXSetY&$FFFF \ opxn(1,$04)
+OP2Set0:  CALL OPXSetY&$FFFF \ opxn(2,$00)
+OP2Set1:  CALL OPXSetY&$FFFF \ opxn(2,$01)
+OP2Set2:  CALL OPXSetY&$FFFF \ opxn(2,$02)
+OP2Set3:  CALL OPXSetY&$FFFF \ opxn(2,$03)
+OP2Set4:  CALL OPXSetY&$FFFF \ opxn(2,$04)
+OP2Set5:  CALL OPXSetY&$FFFF \ opxn(2,$05)
+OP2Set8:  CALL OPXSetY&$FFFF \ opxn(2,$08)
+OP2Set60: CALL OPXSetY&$FFFF \ opxn(2,$60)
+OP3Set0: CALL OPXSetY&$FFFF \ opxn(3,$00)
+OP3Set1: CALL OPXSetY&$FFFF \ opxn(3,$01)
+OP3Set2: CALL OPXSetY&$FFFF \ opxn(3,$02)
+OP4Set0: CALL OPXSetY&$FFFF \ opxn(4,$00)
+OP4Set1: CALL OPXSetY&$FFFF \ opxn(4,$01)
+OP5Set0: CALL OPXSetY&$FFFF \ opxn(5,$00)
+
 
 Exch9:
 	LD B,9
@@ -193,9 +219,10 @@ ZeroOp1:
 	LD HL,Op1&$FFFF
 ZeroOp:
 	LD A,11
-_:	LD (HL),0
+_zeroRepA:
+	LD (HL),0
 	DEC A
-	JR NZ,-_
+	JR NZ,_zeroRepA
 	RET
 
 ClrLp:
@@ -203,7 +230,58 @@ ClrLp:
 	INC HL
 	DJNZ ClrLp
 	RET
+
+;6104 -- 6149
+
+HLTimes9:
+	LD C,L
+	LD B,H
+	ADD HL,HL
+	RET C
+	ADD HL,HL
+	RET C
+	ADD HL,HL
+	RET C
+	ADD HL,BC
+	RET
+
+OPXSetY:
+	POP HL
+	LD A,(HL)
+	INC HL
+	LD L,(HL)
+	LD H,(Op1>>8)&$FF
+	LD (HL),0
+	INC HL
+	LD (HL),$81
+	INC HL
+	LD (HL),A
+	INC HL
+Zero16D:
+	LD A,8
+	JR _zeroRepA  ;may need to normalize after this?
+
+OP2SetA:
+	LD HL,Op2&$FFFF
+	LD (HL),$00
+	INC HL
+	LD (HL),$80
+	INC HL
+	LD (HL),A
+	INC HL
+	JR Zero16D
 	
+HtimesL:
+	MLT HL
+	RET
+	
+;6288
 	
 
-;6104
+
+
+
+
+
+
+

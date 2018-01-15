@@ -4,10 +4,43 @@
 ;to do proper key debouncing and stuff. This routine is supposed to be
 ;called by the interrupt so that GetCSC is nearly instantaneous and properly
 ;handles debouncing by not being dependent on the number of times it is called
+
+;Destroys BC,HL
+;kbdScanCode+0 = keycode reported by GetCSC
+;kbdScanCode+1 = keycode of currently held key
+;kbdScanCode+2 = keyhold delay 
+;
+;
 KbdScan:
 	CALL getscancode
-	;there's more debouncing work to be done.
-	LD (kbdScanCode),A
+	LD HL,kbdScanCode+1
+	INC A    ;CHECK IF KEYBOARD WAS FATFINGERED
+	JR Z,_kbdscan_reject
+	DEC A    ;CHECK IF NO KEYS WERE PRESSED.
+	JR Z,_kbdscan_newkey
+	CP (HL)  ;CHECK IF CURKEY MATCHES KEY PRESSED
+	JR NZ,_kbdscan_newkey
+	CP 9     ;CHECK IF HELD KEY IS NOT AN ARROW KEY
+	JR NC,_kbdscan_reject
+	INC HL   ;+2 delay
+	DEC (HL)
+	JR NZ,_kbdscan_timer_reject
+	LD (HL),32
+	JR _kbdscan_setkey
+_kbdscan_newkey:
+	INC HL
+	LD (HL),127
+_kbdscan_setkey:	
+	DEC HL
+	LD (HL),A
+	DEC HL
+	LD (HL),A
+	RET
+_kbdscan_timer_reject:
+	DEC HL
+_kbdscan_reject:
+	DEC HL
+	LD (HL),0
 	RET
 	
 GetCSC:
@@ -23,45 +56,37 @@ GetCSC:
 ;key post-increment
 getscancode:
 	;CALL scankbd
-	PUSH HL
-		PUSH BC
-			LD HL,$F5001E
-			LD B,H  ;let B be the group counter
-			LD C,H  ;let C be the key counter
+	LD HL,$F5001E
+	LD B,H  ;let B be the group counter
+	LD C,H  ;let C be the key counter
 _gsc_mainloop:
-			LD A,(HL)
-			OR A
-			JR Z,_gsc_nextrow
-			INC C
-			DEC C
-			JR NZ,_gsc_reject_keypress  ;FAT FINGERS ON ANOTHER ROW? REJECT.
-_:			INC C
-			SRL A     ;RRCA DOES NOT SET Z FLAG. RRC A DOES.
-			JR NC,-_  ;LOOP UNTIL A 1 BIT IS FOUND.
-			JR NZ,_gsc_reject_keypress  ;PRVENT SUPER FAT FINGER PROBLEMS
-			LD A,B
-			ADD A,A
-			ADD A,A
-			ADD A,A
-			ADD A,C
-			LD C,A   ;STORE COMPLETED KEY BACK IN C, KEEP LOOPING TO PREV FATFINGER
+	LD A,(HL)
+	OR A
+	JR Z,_gsc_nextrow
+	INC C
+	DEC C
+	JR NZ,_gsc_fatfingered  ;FAT FINGERS ON ANOTHER ROW? REJECT.
+_:	INC C
+	SRL A     ;RRCA DOES NOT SET Z FLAG. RRC A DOES.
+	JR NC,-_  ;LOOP UNTIL A 1 BIT IS FOUND.
+	JR NZ,_gsc_fatfingered  ;PRVENT SUPER FAT FINGER PROBLEMS
+	LD A,B
+	ADD A,A
+	ADD A,A
+	ADD A,A
+	ADD A,C
+	LD C,A   ;STORE COMPLETED KEY BACK IN C, KEEP LOOPING TO PREV FATFINGER
 _gsc_nextrow:
-			INC B
-			DEC L
-			DEC L
-			LD A,L
-			CP A,$10
-			JR NZ,_gsc_mainloop
-			LD A,C
-			OR A
-			JR Z,_gsc_reject_keypress  ;NO KEYS WERE ACTUALLY PUSHED
-		POP BC
-	POP HL
+	INC B
+	DEC L
+	DEC L
+	LD A,L
+	CP A,$10
+	JR NZ,_gsc_mainloop
+	LD A,C
 	RET
-_gsc_reject_keypress:
-			XOR A
-		POP BC
-	POP HL
+_gsc_fatfingered:
+	LD A,$FF
 	RET
 	
 ;Compatibility/convenience routine for 83+ programs.

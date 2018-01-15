@@ -356,6 +356,30 @@ _:		LD.S A,(HL)
 _:	POP AF
 	RET
 	
+PutPS:
+	LD B,(HL)
+	INC B
+	DEC B
+	RET Z
+	INC HL
+_:	LD A,(HL)
+	INC HL
+	CALL PutC
+	LD A,(curRow)
+	LD C,A
+	LD A,8  ;TODO: Replace later with (winBtm)
+	CP C
+	RET Z
+	DJNZ -_
+	RET
+
+	
+	
+	
+	
+		
+	
+	
 divHLby8:
 	SRL H \ RR L
 	SRL H \ RR L
