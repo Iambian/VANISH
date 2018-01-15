@@ -206,8 +206,8 @@ bcall_sbase_os:
 .dl errnosupport            ;$4252 _OP1ExpToDec 
 .dl errnosupport            ;$4255 _ckop2pos 
 .dl errnosupport            ;$4258 _CkOP1Pos 
-.dl errnosupport            ;$425B _ClrOP2S 
-.dl errnosupport            ;$425E _ClrOP1S 
+.dl ClrOp2S                 ;$425B _ClrOP2S 
+.dl ClrOp1S                 ;$425E _ClrOP1S 
 .dl errnosupport            ;$4261 _FDIV100 
 .dl errnosupport            ;$4264 _FDIV10 
 .dl errnosupport            ;$4267 _DecO1Exp 
@@ -646,12 +646,12 @@ bcall_sbase_os:
 .dl errnosupport            ;$477A _numPPutAway 
 .dl errnosupport            ;$477D _numRedisp 
 .dl errnosupport            ;$4780 _numError02 
-.dl errnosupport            ;$4783 _Load_SFont 
-.dl errnosupport            ;$4786 _SFont_Len 
+.dl Load_SFont              ;$4783 _Load_SFont 
+.dl SFont_Len               ;$4786 _SFont_Len 
 .dl errnosupport            ;$4789 _InitNumVec 
-.dl errnosupport            ;$478C _SetXXOP1 
-.dl errnosupport            ;$478F _SetXXOP2 
-.dl errnosupport            ;$4792 _SetXXXXOP2 
+.dl SetXXOp1                ;$478C _SetXXOP1 
+.dl SetXXOp2                ;$478F _SetXXOP2 
+.dl SetXXXXOP2              ;$4792 _SetXXXXOP2 
 .dl errnosupport            ;$4795 _UCLineS 
 .dl errnosupport            ;$4798 _CLine 
 .dl errnosupport            ;$479B _CLineS 
@@ -917,7 +917,7 @@ bcall_sbase_os:
 .dl errnosupport            ;$4AA7 _SAVEPARSE 
 .dl errnosupport            ;$4AAA _InitPFlgs 
 .dl errnosupport            ;$4AAD _CKENDLINERR 
-.dl errnosupport            ;$4AB0 _OP2Set60 
+.dl OP2Set60                ;$4AB0 _OP2Set60 
 .dl errnosupport            ;$4AB3 _GETSTATPTR 
 .dl errnosupport            ;$4AB6 _CMP_STATPTR 
 .dl errnosupport            ;$4AB9 _VARSYSADR 
@@ -1045,8 +1045,8 @@ bcall_sbase_os:
 .dl errnosupport            ;$4C27 _SetDialogCallback 
 .dl errnosupport            ;$4C2A _ResDialogCallback 
 .dl errnosupport            ;$4C2D _CopyDialogNum 
-.dl errnosupport            ;$4C30 _MemClear 
-.dl errnosupport            ;$4C33 _MemSet 
+.dl MemClear                ;$4C30 _MemClear 
+.dl MemSet                  ;$4C33 _MemSet 
 .dl errnosupport            ;$4C36 _ReloadAppEntryVecs 
 .dl errnosupport            ;$4C39 _PointOn 
 .dl errnosupport            ;$4C3C _ExecuteNewPrgm 
@@ -1088,8 +1088,8 @@ bcall_sbase_os:
 .dl errnosupport            ;$4CA8 _startsmalledit 
 .dl errnosupport            ;$4CAB  
 .dl errnosupport            ;$4CAE _SGetTokString 
-.dl errnosupport            ;$4CB1 _LoadPattern 
-.dl errnosupport            ;$4CB4 _SStringLength 
+.dl LoadPattern             ;$4CB1 _LoadPattern 
+.dl SStringLength           ;$4CB4 _SStringLength 
 .dl errnosupport            ;$4CB7 _RestorePenCol 
 .dl errnosupport            ;$4CBA  
 .dl errnosupport            ;$4CBD _DoNothing 

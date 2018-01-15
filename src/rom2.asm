@@ -52,11 +52,12 @@ testString:
 testVString:
 .db "Rawr. Cherries.",0
 
-#include "src/sub/r2_errors.asm"   ;Simulated, and internal error reporting
-#include "src/sub/r2_screen.asm"   ;LCD routines and that which writes to it
-#include "src/sub/r2_text.asm"     ;Text rendering
-#include "src/sub/r2_keyboard.asm" ;Keyboard routines
+
+
+#include "src/sub/r2_lcd.asm"           ;LCD driver routines
 
 
 
+
+;---------------------------------------------------------------------------
 .echo "rom2 size: ",$-rom2_base_adr," bytes"

@@ -250,6 +250,7 @@ OPXSetY:
 	LD A,(HL)
 	INC HL
 	LD L,(HL)
+SetXXOpX:
 	LD H,(Op1>>8)&$FF
 	LD (HL),0
 	INC HL
@@ -276,7 +277,84 @@ HtimesL:
 	RET
 	
 ;6288
+
+SetXXOp1:
+	CALL _bin2bcd8bit&$FFFF
+	LD L,Op1&$FF
+	JR SetXXOpX
+SetXXOp2:
+	CALL _bin2bcd8bit&$FFFF
+	LD L,Op2&$FF
+	JR SetXXOpX
 	
+;SOURCED FROM
+;https://www.msx.org/forum/development/msx-development/bcdhex-conversion-asm
+_bin2bcd8bit:
+	LD C,A
+	XOR A
+	LD B,8
+_:	SLA C
+	ADC A,A
+	DAA
+	DJNZ -_
+	RET
+	
+	
+SetXXXXOP2:
+	CALL ZeroOp2&$FFFF
+	CALL _bin2bcd16bit&$FFFF
+	LD HL,(Op2+1)&$FFFF  ;sign bit already zero
+	LD (HL),$85
+	INC HL
+	LD (HL),C
+	INC HL
+	LD (HL),D
+	INC HL
+	LD (HL),E
+	RET
+	
+_bin2bcd16bit:
+	LD DE,0
+	LD BC,(16*256)+0
+_:	ADD HL,HL
+	LD A,E
+	ADC A,A
+	DAA
+	LD E,A
+	LD A,D
+	ADC A,A
+	DAA
+	LD D,A
+	LD C,A
+	ADC A,A
+	DAA
+	LD C,A
+	DJNZ -_
+	RET
+	
+;6353
+
+MemClear:
+	XOR A
+MemSet:
+	LD (HL),A
+	PUSH HL
+	POP DE
+	INC DE
+	DEC BC
+	LDIR
+	RET
+	
+ClrOp2S:
+	PUSH HL
+		LD HL,Op2&$FFFF
+		JR _
+ClrOp1S:
+	PUSH HL
+		LD HL,Op1&$FFFF
+_:		RES 7,(HL)
+	POP HL
+	RET
 
 
 
