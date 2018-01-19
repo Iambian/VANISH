@@ -333,6 +333,10 @@ bpSave				EQU	rom0_base_adr+$9D8A
 userMem				EQU	rom0_base_adr+$9D95
 symTable			EQU	rom0_base_adr+$FE66
 
+;// UNDOCUMENTED RAM LOCATIONS
+basic_start			EQU rom0_base_adr+$965B
+basic_pc  			EQU rom0_base_adr+$965D ;//also referred to as nextParseByte
+basic_end			EQU rom0_base_adr+$965F
 
 
 

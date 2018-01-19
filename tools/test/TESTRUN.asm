@@ -9,8 +9,20 @@ _ClrScrnFull	EQU 4546h
 _HomeUp 		EQU 4558h
 _DispHL			EQU 4507h
 _GetCSC			EQU 4018h
+_CreateTempString EQU 4324h
 
 ProgramStart:
+	LD HL,1337
+	bcall(_CreateTempString)
+	JR $
+	LD HL,666
+	bcall(_CreateTempString)
+	jr $
+	ret
+	
+	
+	
+	
 	bcall(_ClrScrnFull)
 _:	ei
 	bcall(_HomeUp)

@@ -90,8 +90,6 @@ CpHLDE:
 	POP HL
 	RET
 	
-;5856
-	
 #define opxy(x,y) .db ((y-1)*11)+(Op1&$FF),((x-1)*11)+(Op1&$FF)
 Op1ToOp2: CALL OpXtoOpY&$FFFF \ opxy(1,2) ;1
 Op1ToOp3: CALL OpXtoOpY&$FFFF \ opxy(1,3)
@@ -231,7 +229,6 @@ ClrLp:
 	DJNZ ClrLp
 	RET
 
-;6104 -- 6149
 
 HLTimes9:
 	LD C,L
@@ -276,7 +273,6 @@ HtimesL:
 	MLT HL
 	RET
 	
-;6288
 
 SetXXOp1:
 	CALL _bin2bcd8bit&$FFFF
@@ -332,8 +328,6 @@ _:	ADD HL,HL
 	DJNZ -_
 	RET
 	
-;6353
-
 MemClear:
 	XOR A
 MemSet:
@@ -358,8 +352,17 @@ _:		RES 7,(HL)
 
 
 
-
-
+_HLMinus7: ;2470
+	DEC HL
+_HLMinus6: ;2471
+	DEC HL
+HLMinus5:
+	DEC HL
+	DEC HL
+	DEC HL
+	DEC HL
+	DEC HL
+	RET
 
 
 

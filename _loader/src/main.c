@@ -27,8 +27,8 @@
 #include <fileioc.h>
 
 /* Put your function prototypes here */
-typedef void func(void);
-func* debugfn = (func*)0xD60000;
+typedef void (*func)(void *prgmptr);
+func debugfn = (func)0xD60000;
 void printline(char *s);
 void printerr(char *s);
 void keywait();
@@ -69,10 +69,10 @@ void main(void) {
 		}
 	}
 	memcpy((void*)0xD49D93,ti_GetDataPtr(slot),24000);
-	ti_CloseAll();
 	/* ### START DEBUG ### */
-	debugfn();
+	debugfn(ti_GetDataPtr(slot));
 	/* ### END DEBUG ### */
+	ti_CloseAll();
 	gfx_End();
 	
 }
