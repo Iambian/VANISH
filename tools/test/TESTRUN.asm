@@ -12,23 +12,20 @@ _GetCSC			EQU 4018h
 _CreateTempString EQU 4324h
 
 ProgramStart:
-	LD HL,1337
-	bcall(_CreateTempString)
-	JR $
-	LD HL,666
-	bcall(_CreateTempString)
-	jr $
-	ret
-	
-	
-	
-	
-	bcall(_ClrScrnFull)
-_:	ei
 	bcall(_HomeUp)
-	bcall(_GetCSC)
-	ld L,A
-	ld H,0
+	ld hl,str1
+	ld bc,9
+	xor a
+	cpir
+	push bc
+	pop hl
 	bcall(_DispHL)
-	jr -_
+	ret
 
+
+
+
+str1:
+.db "01234567",0
+	
+	

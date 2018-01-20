@@ -5,6 +5,8 @@
 #DEFINE EQU .equ
 #DEFINE bcall(x) rst 28h \.dw x
 
+#DEFINE BUILD_VANISH
+
 _KbdScan	EQU	$4015
 
 

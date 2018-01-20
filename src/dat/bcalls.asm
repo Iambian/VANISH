@@ -294,7 +294,7 @@ bcall_sbase_os:
 .dl DELVAR3D                ;$435A _DELVAR3D 
 .dl DELVAR3C                ;$435D _DELVAR3C 
 .dl DelVar3DC               ;$4360 _DELVAR3DC 
-.dl errnosupport            ;$4363 _IsFixedName 
+.dl IsFixedName             ;$4363 _IsFixedName 
 .dl errnosupport            ;$4366 _DelVarEntry 
 .dl errnosupport            ;$4369 _DataSizeA 
 .dl errnosupport            ;$436C _DataSize 

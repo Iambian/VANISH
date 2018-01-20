@@ -242,6 +242,7 @@ HLTimes9:
 	ADD HL,BC
 	RET
 
+
 OPXSetY:
 	POP HL
 	LD A,(HL)
@@ -270,7 +271,22 @@ OP2SetA:
 	JR Zero16D
 	
 HtimesL:
+#IFDEF BUILD_VANISH
 	MLT HL
+#ELSE
+	LD B,7
+	LD E,L
+	LD D,0
+	LD L,D
+	SLA H
+	JR NC,$+3
+	LD L,E
+_:	ADD HL,HL
+	JR NC,$+3
+	ADD HL,DE
+	DJNZ -_
+	RET
+#ENDIF
 	RET
 	
 

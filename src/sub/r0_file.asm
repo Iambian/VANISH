@@ -155,11 +155,11 @@ _:	ADD A,L
 	LD A,H
 	ADC A,$FF
 	LD H,A
-	LD A,(OPBase+0)
+	LD A,(OPBase+0)  ;END-CUR. If CUR<=END, quit. Means quit on NC
 	SUB L
 	LD A,(OPBase+1)
-	SUB H
-	RET C
+	SBC A,H
+	RET NC
 	JR --_
 
 
@@ -290,9 +290,42 @@ IsFixedName:
 _:	INC A
 	RET
 	
+;in:  HL=Address of name to compare against (not include type byte)
+;out: A = Length of variable name
+;notes: preserves HL, destroys D,BC. Original also destroyed E.
+CMPPRGNAMLEN1:
+	PUSH HL
+		JR _
+;in:  OP1+1 = Name of variable [Op1 is var type]
+;out: A = Length of variable name
+;dest: D,BC
+CMPPRGNAMLEN:
+	PUSH HL
+		LD HL,(OP1+1)&$FFFF
+		LD A,(HL)
+		SUB $5D-1
+		LD D,A
+		LD BC,9
+		XOR A
+		CPIR
+	POP HL
+	LD A,8
+	SUB C
+	CP 1
+	RET NZ  ;SKIP SINGLE CHR CHECK
+	INC D
+	RET NZ  ;SKIP LIST 2BYTE CHECK
+	INC A
+	RET
 	
+
+
+
 	
+;in: A=VarType, HL=Size, OP1+1= Name of file to create
+CreateVar:
 	
+		
 	
 IS_A_LSTorCLST:
 	CP $01
@@ -307,6 +340,67 @@ _CheckAllNamedTypes:
 	CP $05 \ RET Z
 	CP $06 \ RET Z
 	CP $16 \ RET
+	
+	
+;Preserve HL and AF.
+;Fetches pTempCnt and shoves it into OP1M (OP1+2), then increments this value.
+;Check to see if it goes over 64K and throw err:mem at it. SAFE TO OMIT THIS.
+;Write $24 to Op1+1 ('$'), then run FindSym on the result.
+;If object was not found, restore HL and AF, do "OR A" and return.
+;If it was found, it seems to be trying to re-use it? In that case...
+;HL = VAT entry, DE = data entry
+;Reset bit 7 of (HL) [Data type byte, flag bit probably indicating "dirty"]
+;Call DataSize
+;Store result in insDelPtr
+;Restore HL and AF as follows: HL->BC, AF->AF
+;Preserve AF,BC,DE, then call DataSizeA
+;*** I'm going to need to know more about DataSizeA and DataSize before going on
+;*** Stoping point is 07h:1305h
+;
+;
+;
+;
+;
+CREATETEMP:
+	
+	
+	
+FindSym:
+	
+	
+	
+;In:   BC= VariableSizeField, A=VarType
+;out:  DE= size in bytes in data area, including size field
+;dest: A,BC [preserves HL]
+;Note: Assumes that the input type is not real/cplx. Does not check for that.
+DataSizeA:
+	LD D,B
+	LD E,C
+	JR _datasize_breakin
+
+;Stores 9 to DE then masks out contents of reg A. This is obviously var type.
+;Immediately exits if the result is zero. DE=9
+;Set DE=18 and check again if A is $0C. Exit now if so.
+;Now we (HL)->DE without changing HL, PRESERVE HL, then EX DE,HL.
+;Check if the vartype is any of these: $15,$17,$16 (avar,grp,tmpprg)
+;  If so, add 2 to size, jp to ErrMemory if overflow,
+;  EX DE,HL, restore HL, OR A then return.
+;Check if vartype is $0D (cplxlist). If so, HL*2 then HL*9. ErrMem on carry, HL+2
+;If Vartype is equal to or more than 3 at this point, treat as $15,$17,$16
+;If vartype is not list ($01), it's a matrix obj. Multiply H and L. Else...
+;The vartype is a list. Mult HL by 9 then continue on.
+
+;In:   BC= VariableSizeField, A=VarType
+;out:  DE= size in bytes in data area, including size field
+;dest: A,BC [preserves HL]
+DataSize:
+	;todo: finish this.
+	
+	
+	
+	
+_datasize_breakin:
+	
 	
 
 ;--------------------------------------------------------------------		
