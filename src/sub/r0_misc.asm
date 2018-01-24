@@ -229,20 +229,6 @@ ClrLp:
 	DJNZ ClrLp
 	RET
 
-
-HLTimes9:
-	LD C,L
-	LD B,H
-	ADD HL,HL
-	RET C
-	ADD HL,HL
-	RET C
-	ADD HL,HL
-	RET C
-	ADD HL,BC
-	RET
-
-
 OPXSetY:
 	POP HL
 	LD A,(HL)
@@ -269,26 +255,6 @@ OP2SetA:
 	LD (HL),A
 	INC HL
 	JR Zero16D
-	
-HtimesL:
-#IFDEF BUILD_VANISH
-	MLT HL
-#ELSE
-	LD B,7
-	LD E,L
-	LD D,0
-	LD L,D
-	SLA H
-	JR NC,$+3
-	LD L,E
-_:	ADD HL,HL
-	JR NC,$+3
-	ADD HL,DE
-	DJNZ -_
-	RET
-#ENDIF
-	RET
-	
 
 SetXXOp1:
 	CALL _bin2bcd8bit&$FFFF
@@ -380,5 +346,83 @@ HLMinus5:
 	DEC HL
 	RET
 
+HLTimes9:
+	LD C,L
+	LD B,H
+	ADD HL,HL
+	RET C
+	ADD HL,HL
+	RET C
+	ADD HL,HL
+	RET C
+	ADD HL,BC
+	RET
 
+HtimesL:
+#IFDEF BUILD_VANISH
+	MLT HL
+#ELSE
+	LD B,7
+	LD E,L
+	LD D,0
+	LD L,D
+	SLA H
+	JR NC,$+3
+	LD L,E
+_:	ADD HL,HL
+	JR NC,$+3
+	ADD HL,DE
+	DJNZ -_
+	RET
+#ENDIF
+	RET
+
+	
+;PRESERVES REGISTERS
+SetTblGraphDraw:
+	BIT 1,(IY+3)  ;UNDOCUMENTED FLAG IN graphFlags
+	JR NZ,_
+	SET smartGraph_inv,(IY+smartFlags)
+	SET reTable,(IY+tblFlags)
+	SET graphDraw,(IY+graphFlags)
+	RET
+	
+	
+	
+;saves bc, masks out divides C by 8 and stores into DE (D=0)
+;Adds DE to HL, saves HL, checks lower 3 bits of C and stores that to E.
+;Fetches whatever is at address $26FF + DE (+0 thru +7), does an AND with C
+;restores HL and BC and returns. This is probably checking some sort of flag.
+
+
+_isinset_9320:
+	LD HL,tempOp2&$FFFF
+;in:  A=bitfield, HL=AddressToUse
+;out: A=mask retrieved, NZ if the bit in (HL+A/8) was set.
+;
+ISINSET:
+	PUSH BC
+		LD C,A
+		AND ~7
+		RRCA
+		RRCA
+		RRCA
+		LD E,A
+		LD D,0
+		ADD HL,DE
+		PUSH HL
+			LD A,C
+			AND 7
+			LD E,A
+			LD A,(HL)
+			LD HL,_&$FFFF
+			ADD HL,DE
+			LD C,(HL)
+			AND C
+			LD A,C
+		POP HL
+	POP BC
+	RET
+_:		
+.db $01,$02,$04,$08,$10,$20,$40,$80
 

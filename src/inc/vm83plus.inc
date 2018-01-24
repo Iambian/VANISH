@@ -340,36 +340,39 @@ basic_start			EQU rom0_base_adr+$965B
 basic_pc  			EQU rom0_base_adr+$965D ;//also referred to as nextParseByte
 basic_end			EQU rom0_base_adr+$965F
 
+tempOp1				EQU P3FrqOnOff+$001A ;9315
+tempOp2				EQU	tempOp1+$000B    ;9320
 
 
+;// SYSTEM FLAGS
 ;//-
-trigFlags	EQU  0		;Trigonometry mode settings
-trigDeg 	EQU    2	; 1=degrees, 0=radians
-
-kbdFlags	EQU  0		;Keyboard scan
-kbdSCR		EQU    3	; 1=scan code ready
-kbdKeyPress	EQU    4	; 1=key has been pressed
-
-doneFlags	EQU  0		;display "Done"
-donePrgm	EQU    5	; 1=display "Done" after prgm
-
-ioDelFlag	EQU  0
-inDelete	EQU    0	;1 = DELETE SCREEN 
-;//---
-textFlags		EQU   5 	;Text output flags
+trigFlags		EQU   00	;Trigonometry mode settings
+trigDeg 		EQU    2	; 1=degrees, 0=radians
+kbdFlags		EQU   00	;Keyboard scan
+kbdSCR			EQU    3	; 1=scan code ready
+kbdKeyPress		EQU    4	; 1=key has been pressed
+doneFlags		EQU   00	;display "Done"
+donePrgm		EQU    5	; 1=display "Done" after prgm
+ioDelFlag		EQU   00
+inDelete		EQU    0	;1 = DELETE SCREEN 
+;//-
+graphFlags		EQU   03
+graphDraw		EQU    0	; 0=graph is valid, 1=redraw graph
+;//-
+textFlags		EQU   05 	;Text output flags
 textEraseBelow	EQU    1	; 1=erase line below small char
 textScrolled	EQU    2	; 1=screen scrolled
 textInverse		EQU    3	; 1=display inverse bit-map
 textInsMode		EQU    4	; 0=overstrike, 1=insert mode
 ;//-
-internalFlags   EQU   6     ;##THESE FLAGS WEREN'T BEING USED
-leadingSpace    EQU  0      ; Internal use
+internalFlags   EQU   06	;##THESE FLAGS WEREN'T BEING USED
+leadingSpace    EQU    0	; Internal use
 ;//-
-newDispF        EQU  8		;Derivative mode flags
-apdFlags		EQU  8		;Automatic power-down
-preClrForMode   EQU   0		; 1=HELP BLINK ON MODE SCREEN
-apdAble 		EQU   2		; 1=APD enabled
-apdRunning		EQU   3		; 1=APD clock running
+newDispF        EQU   08	;Derivative mode flags
+apdFlags		EQU   08	;Automatic power-down
+preClrForMode   EQU    0	; 1=HELP BLINK ON MODE SCREEN
+apdAble 		EQU    2	; 1=APD enabled
+apdRunning		EQU    3	; 1=APD clock running
 ;//-
 appFlags		EQU   13	;application flags
 appWantIntrpt	EQU    0	; 1=want ON key interrupts
@@ -383,6 +386,11 @@ appCurGraphic	EQU    5	; 1=graphic cursor
 appCurWord		EQU    6	; 1=text cursor covers entire word
 appExit 		EQU    7	; 1=application handles [EXIT] key itself
 ;//-
+tblFlags        EQU   19	;table flags.
+autoFill        EQU    4	; 1=prompt, 0=fillAuto
+autoCalc        EQU    5	; 1=prompt, 0=CalcAuto
+reTable         EQU    6	; 0=table is ok, 1=must recompute table.
+;//-
 sGrFlags		EQU   20
 grfSplit		EQU    0	; 1=Split Graph, 0=Normal
 vertSplit		EQU    1	; 1=Vertical (left-right) Split
@@ -393,15 +401,104 @@ g_style_active	EQU    5	; 1 = GRAPH STYLES ARE ENABLED, USE THEM
 cmp_mod_box		EQU    6	; 1 = DOING MOD BOX PLOT COMPUTATION
 textWrite		EQU    7	; 1 = Small font writes to buffer
 							; 0 = Small font writes to display
+;//--
+smartFlags      EQU	  23
+smarter_mask    EQU	   3
+smarter_test    EQU	   1
+smartGraph      EQU	   0
+smartGraph_inv  EQU	   1      
 ;//-
-fontFlags		EQU  50
-fracDrawLFont	EQU   2
-fracTallLFont	EQU   3
-customFont		EQU   7  
+fontFlags		EQU   50
+fracDrawLFont	EQU    2
+fracTallLFont	EQU    3
+customFont		EQU    7  
 
 ;//---
+;// SYSTEM VARIABLE/OBJECT TYPES
+RealObj         EQU		$00
+ListObj         EQU		$01
+MatObj          EQU		$02
+EquObj          EQU		$03
+StrngObj        EQU		$04
+ProgObj         EQU		$05
+ProtProgObj     EQU		$06
+PictObj         EQU		$07
+GDBObj          EQU		$08
+UnknownObj      EQU		$09
+UnknownEquObj   EQU		$0A
+NewEquObj       EQU		$0B
+CplxObj         EQU		$0C
+CListObj        EQU		$0D
+UndefObj        EQU		$0E
+WindowObj       EQU		$0F
+ZStoObj         EQU		$10
+TblRngObj       EQU		$11
+LCDObj          EQU		$12
+BackupObj       EQU		$13
+AppObj			EQU		$14		;application, only used in menus/link
+AppVarObj		EQU		$15		;application variable
+TempProgObj     EQU		$16		;program, home deletes when finished
+GroupObj        EQU		$17		;group.
 
 
+
+;// SYSTEM ERROR CODES
+E_Overflow		EQU		1+$80
+E_DivBy0		EQU		2+$80
+E_SingularMat	EQU		3+$80
+E_Domain		EQU		4+$80
+E_Increment		EQU		5+$80
+E_Break			EQU		6+$80
+E_NonReal       EQU		7+$80
+E_Syntax        EQU		8+$80
+E_DataType      EQU		9+$80
+E_Argument      EQU		10+$80
+E_DimMismatch   EQU		11+$80
+E_Dimension     EQU		12+$80
+E_Undefined     EQU		13+$80
+E_Memory        EQU		14+$80
+E_Invalid       EQU		15+$80
+E_IllegalNest   EQU		16+$80
+E_Bound         EQU		17+$80
+E_GraphRange    EQU		18+$80
+E_Zoom          EQU		19+$80
+E_Label         EQU		20
+E_Stat          EQU		21
+E_Solver        EQU		22+$80
+E_Singularity   EQU		23+$80
+E_SignChange    EQU		24+$80
+E_Iterations    EQU		25+$80
+E_BadGuess      EQU		26+$80
+E_StatPlot      EQU		27
+E_TolTooSmall   EQU		28+$80
+E_Reserved      EQU		29+$80
+E_Mode          EQU		30+$80
+E_LnkErr        EQU		31+$80
+E_LnkMemErr     EQU		32+$80
+E_LnkTransErr   EQU		33+$80
+E_LnkDupErr     EQU		34+$80
+E_LnkMemFull    EQU		35+$80
+E_Unknown       EQU		36+$80
+;                         
+E_Scale         EQU		37+$80
+E_IdNotFound    EQU		38
+E_NoMode        EQU		39+$80
+E_Validation    EQU		40
+E_Length        EQU		41+$80
+E_Application   EQU		42+$80
+E_AppErr1       EQU		43+$80
+E_AppErr2       EQU		44+$80
+E_ExpiredApp	EQU		45
+E_BadAddr		EQU		46
+E_Archived      EQU 	47+$80
+E_Version       EQU 	48
+E_ArchFull      EQU 	49
+E_Variable      EQU 	50+$80
+E_Duplicate     EQU 	51+$80
+HigErrNum       EQU 	51
+
+
+;//=============================================================================
 internal_state  EQU rom2_base_adr + $002C00 ;128 bytes: variables
 
 

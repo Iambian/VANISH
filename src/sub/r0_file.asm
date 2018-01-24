@@ -90,7 +90,43 @@ InsertMem:
 	RET
 
 
-#define ADJPTRSUB(x) LD HL,(x&$FFFF) \ OR A \ SBC HL,DE \ JR C,$+11 \ JR Z,$+9 \ ADD HL,DE \ OR A \ SBC HL,BC \ LD (x&$FFFF),HL
+;#define ADJPTRSUB(x) LD HL,(x&$FFFF) \ OR A \ SBC HL,DE \ JR C,$+11 \ JR Z,$+9 \ ADD HL,DE \ OR A \ SBC HL,BC \ LD (x&$FFFF),HL
+
+
+
+;Okay. This is one of the big ones. First it checks if B is something
+;other than zero, then long jumps someplace (25B7). Otherwise it falls into
+;DelVarNoArc, then DELVARIO. If type has bit 6 set, invalidate graph flags
+;since the variable was being used in graphing or table generation.
+;Preserves AF (vartype/flags), sets BC to 9 (fixed VAT entry size) 
+;Also preserves DE, then calls IsFixedName if name belongs in symtable.
+;If it's a fixed-length name, jump ahead to (2018). Otherwise...
+;Check if var is any list types. IF not, jump ahead (200D)
+;Restore DE [data location] preserves HL just for: CALL GET_FORM_NUM
+;If var was a temp type, returns A=0. If so, jump to 200C.
+;Else restore AF->BC [data type], preserve AF (name size field?)
+;Performs a some sort of delmem at HL [CALL 200B], sets DE to $9315
+;(somewhere between P3FrqOnOff and plotSScreen) then calls $116F to preserve
+;OP1 to memory location $9315
+;
+;
+;
+;in:  HL=VatAdr,DE=DataAdr,B=[ifInFlash?page:0]
+;out: holy shit.
+DelVar:	
+	INC B
+	DEC B
+	;JP NZ,DELVARARC_JUMPTO_PLACEHOLDER
+DelVarNoArc:
+	LD A,(HL)   ;GET TYPE BYTE
+DELVARIO:
+	BIT 6,A
+	CALL NZ,SetTblGraphDraw&$FFFF
+	
+	
+	
+	
+	
 	
 ;Note: This routine is for inserting memory. It does this by
 ;negating BC and then calling the adjustment routine for delmem.
@@ -104,26 +140,26 @@ DelMem:
 DELVAR3D:
 	CALL AdjMath&$FFFF
 DELVAR3C:
-	CALL ADJPARSER  ;BECAUSE OF COURSE.
-	CALL _negBC
+	CALL ADJPARSER&$FFFF  ;BECAUSE OF COURSE.
+	CALL _negBC&$FFFF
 	LD HL,(fpBase&$FFFF)
 	ADD HL,BC
 	LD (fpBase&$FFFF),HL
 	LD HL,(FPS&$FFFF)
 	ADD HL,BC
 	ld (FPS&$FFFF),HL
-	LD HL,(tempMem)
+	LD HL,(tempMem&$FFFF)
 	OR A
 	SBC HL,DE
 	JR C,_ ;If you don't have to modify tempMem, this means we're working with
 	JR Z,_ ;a temp variable. Search pTemp only for extra speed.
 	ADD HL,DE
 	ADD HL,BC
-	LD (tempMem),HL
-	LD HL,symTable
+	LD (tempMem&$FFFF),HL
+	LD HL,symTable&$FFFF
 	JR ++_
-_:	LD HL,(pTemp)
-_:  CALL IsFixedName
+_:	LD HL,(pTemp&$FFFF)
+_:  CALL IsFixedName&$FFFF
 	PUSH AF
 		DEC HL
 		DEC HL
@@ -155,9 +191,9 @@ _:	ADD A,L
 	LD A,H
 	ADC A,$FF
 	LD H,A
-	LD A,(OPBase+0)  ;END-CUR. If CUR<=END, quit. Means quit on NC
+	LD A,((OPBase+0)&$FFFF)  ;END-CUR. If CUR<=END, quit. Means quit on NC
 	SUB L
-	LD A,(OPBase+1)
+	LD A,((OPBase+1)&$FFFF)
 	SBC A,H
 	RET NC
 	JR --_
@@ -268,22 +304,23 @@ _:
 
 ;in: HL = Start of VAT entry of variable to check
 ;out:NZ if object has a fixed length name.
+;dst:A
 IsFixedName:
 	LD A,(HL)
 	AND $1F
-	CALL _CheckAllNamedTypes
+	CALL _CheckAllNamedTypes&$FFFF
 	RET Z
-	CALL IS_A_LSTorCLST
+	CALL IS_A_LSTorCLST&$FFFF
 	RET NZ
 	PUSH HL
-		CALL _HLMinus6
+		CALL _HLMinus6&$FFFF
 		LD A,(HL)
 	POP HL
 	CP $72
 	JR Z,_
 	CP $3A
 	JR Z,_
-	CP $24
+	CP $24  ;temp var name
 	JR Z,_
 	XOR A
 	RET
@@ -302,7 +339,7 @@ CMPPRGNAMLEN1:
 CMPPRGNAMLEN:
 	PUSH HL
 		LD HL,(OP1+1)&$FFFF
-		LD A,(HL)
+_:		LD A,(HL)
 		SUB $5D-1
 		LD D,A
 		LD BC,9
@@ -318,7 +355,28 @@ CMPPRGNAMLEN:
 	INC A
 	RET
 	
-
+	
+;in:   HL=StartOfVATEntry
+;out:  A=formula number, or 0 if object doesn't have a formula.
+;dest: HL,BC
+;note: Temporary variables ($24) cannot have a formula. This is checked for by
+;      Seeing if the first byte of a fixed size name is '$' (024h). Otherwise,
+;      the formula ID is the last byte of a file's name. The name is always
+;      a variable (non-fixed) length name.
+GET_FORM_NUM: ;1F5C
+	CALL _HLMinus6&$FFFF
+	LD A,(HL)
+	CP $24
+	JR NZ,_
+	XOR A
+	RET
+_:	LD B,0
+	LD C,A
+	OR A
+	SBC HL,BC
+	LD A,(HL)
+	RET
+	
 
 
 	
@@ -350,12 +408,14 @@ _CheckAllNamedTypes:
 ;If it was found, it seems to be trying to re-use it? In that case...
 ;HL = VAT entry, DE = data entry
 ;Reset bit 7 of (HL) [Data type byte, flag bit probably indicating "dirty"]
-;Call DataSize
-;Store result in insDelPtr
-;Restore HL and AF as follows: HL->BC, AF->AF
-;Preserve AF,BC,DE, then call DataSizeA
-;*** I'm going to need to know more about DataSizeA and DataSize before going on
-;*** Stoping point is 07h:1305h
+;exch HL and DE to put file data ptr into HL. A is still type.
+;Save preserved HL (data address) to insDelPtr. DE is the size in bytes.
+;Restore registers: AF = type, BC = RequestedVariableSize
+;Preserve: AF,BC=ReqVarSize,DE=FoundVarSizeBytes,HL=DataAddress
+;Call DataSizeA returns requestedVarSize in DE, Restore FoundVarSize in HL.
+;FoundVarSize - RequestedVarSize. If zero, goto A. NC, goto B. Else keep going.
+;Undo the subtraction, flip HL and DE and subtract again:
+;RequestedVarSize - FoundVarSize
 ;
 ;
 ;
@@ -369,7 +429,7 @@ FindSym:
 	
 	
 	
-;In:   BC= VariableSizeField, A=VarType
+;In:   BC= VariableSizeField, A=VarType (pre-masked. This might be a bug?)
 ;out:  DE= size in bytes in data area, including size field
 ;dest: A,BC [preserves HL]
 ;Note: Assumes that the input type is not real/cplx. Does not check for that.
@@ -378,30 +438,106 @@ DataSizeA:
 	LD E,C
 	JR _datasize_breakin
 
-;Stores 9 to DE then masks out contents of reg A. This is obviously var type.
-;Immediately exits if the result is zero. DE=9
-;Set DE=18 and check again if A is $0C. Exit now if so.
-;Now we (HL)->DE without changing HL, PRESERVE HL, then EX DE,HL.
-;Check if the vartype is any of these: $15,$17,$16 (avar,grp,tmpprg)
-;  If so, add 2 to size, jp to ErrMemory if overflow,
-;  EX DE,HL, restore HL, OR A then return.
-;Check if vartype is $0D (cplxlist). If so, HL*2 then HL*9. ErrMem on carry, HL+2
-;If Vartype is equal to or more than 3 at this point, treat as $15,$17,$16
-;If vartype is not list ($01), it's a matrix obj. Multiply H and L. Else...
-;The vartype is a list. Mult HL by 9 then continue on.
-
-;In:   BC= VariableSizeField, A=VarType
+;In:   HL=ptrToVariableStart, A=VarType
 ;out:  DE= size in bytes in data area, including size field
 ;dest: A,BC [preserves HL]
 DataSize:
 	;todo: finish this.
-	
-	
-	
-	
+	LD DE,9
+	AND $1F  ;MASK OUT AND CHECK FOR REAL TYPE
+	RET Z
+	LD DE,18
+	CP CplxObj
+	RET Z
+	LD E,(HL)
+	INC HL
+	LD D,(HL)
+	DEC HL
 _datasize_breakin:
+	PUSH HL
+		EX DE,HL
+		DEC A   ;ListObj
+		JR Z,_datasize_mult9
+		DEC A   ;MatObj
+		JR Z,_datasize_matr
+		CP CListObj-2
+		JR NZ,_datasize_passthrough
+		ADD HL,HL
+		OR A  ;NZ so HtimesL is not called
+_datasize_matr:
+		CALL Z,HtimesL&$FFFF
+_datasize_mult9:
+		CALL HLtimes9&$FFFF
+		JP C,ErrMemory&$FFFF
+_datasize_passthrough:
+		LD DE,2
+		ADD HL,DE
+		JP C,ErrMemory&$FFFF
+		EX DE,HL
+	POP HL
+	OR A
+	RET
+	
+;in:  HL=BytesNeeded
+;out: DE=BytesReq, carry set if not enough memory. Also, system error thrown.
+ErrNotEnoughMem:
+	CALL EnoughMem&$FFFF
+	RET NC
+	JP ErrMemory&$FFFF
+;in:  HL=BytesNeeded
+;out: DE=BytesReq, carry set if not enough memory
+EnoughMem:
+	EX DE,HL
+_enm_check_again:
+	CALL MemChk&$FFFF  ;My version also clears carry flag
+	SBC HL,DE
+	RET NC     ;RETURN IF WE HAVE ENOUGH MEMORY. HL IS AMT OF MEM WE HAVE LEFT
+	PUSH DE
+		LD DE,-9
+		LD HL,(pTemp&$FFFF)
+		LD BC,(OPBase&$FFFF)
+		INC BC
+_enm_del_keep_trying:
+		OR A
+		SBC HL,BC
+		JR C,_enm_we_really_tried
+		ADD HL,BC
+		BIT 7,(HL)
+		JR Z,_enm_but_it_wasnt_that_dirty
+		PUSH HL
+			DEC HL
+			DEC HL
+			DEC HL
+			LD E,(HL)
+			DEC HL
+			LD D,(HL)
+			DEC HL
+			LD B,(HL)
+		POP HL
+		CALL DelVar&$FFFF
+	POP DE
+	JR _enm_check_again
+_enm_but_it_wasnt_that_dirty:
+		ADD HL,DE
+		JR _enm_del_keep_trying
+_enm_we_really_tried:
+	POP DE
+	RET     ;but_it_just_wasnt_meant_to_be
 	
 	
+;in: N/A
+;out:HL=AmtOfRAMAvailable. ENHANCEMENT: CLEARS CARRY FLAG
+;dst:HL,BC.
+MemChk:
+	LD HL,(OPS&$FFFF)
+	LD BC,(FPS&$FFFF)
+	OR A
+	SBC HL,BC
+	INC HL
+	RET NC
+	OR A
+	SBC HL,HL
+	RET	
 
 ;--------------------------------------------------------------------		
 

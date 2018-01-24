@@ -1,0 +1,55 @@
+NOTES FROM LAST SESSION:
+--------------------------------------------------------------------------------
+DelVar3DC = 2050h
+DelMem = 2020h
+AdjMath = 1DC0h
+IsFixedName = 20A8h
+CreateProg = 1D27h
+CreateTempRList = 1CA8h
+
+1815: "@ICHDJK"
+181C: CALL CKOP1REAL
+181F: RET Z if A is $15,$17 ; $05,$06,$16
+
+OP4                  EQU  8499h
+tempMem              EQU  9820h
+fpBase               EQU  9822h
+FPS                  EQU  9824h
+OPBase               EQU  9826h
+OPS                  EQU  9828h
+pTempCnt             EQU  982Ah
+cleanTmp             EQU  982Ch
+pTemp                EQU  982Eh
+progPtr              EQU  9830h
+
+TEMP OBJECTS VAT STRUCTURE
+VAT1: 00 00 24 00[9E 4B]00 00 04
+VAT2: 00 01 24 00 A3 86 00 00 04 
+--------------------------------------------------------------------------------
+
+Was looking into recreating: [CREATETEMP]
+Which led to: [ErrNotEnoughMem] (left off at 07:1312), which led to [DelVar]
+I got stuck on [DelVar] because it's doing crazy things.
+I basically copied [ISINSET] but not sure I can compatibly optimize it.
+[CreateVar] was on its own little side-quest. It needs some love.
+[FindSym] was referenced in [DelVar], I think. Need to check to see if it
+also scans the temp object section. jacobly mentioned that he had a symtab
+sort routine followed by a binary search algorithm in place of FindSym. I don't
+intend on doing that much.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -6,6 +6,7 @@
 #include "src/sub/r0_int.asm"      ;Interrupt handlers
 #include "src/sub/r0_hw.asm"       ;Hardware init/restore/manip
 #include "src/sub/r0_file.asm"     ;Filesystem stuff
+#include "src/sub/r0_jerr.asm"     ;OS error handling
 #include "src/sub/r0_misc.asm"     ;Other routines that should be in z80 space
 
 ;Called directly from ADL mode using CALL.SIS
